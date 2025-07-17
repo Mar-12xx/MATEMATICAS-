@@ -1,189 +1,932 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Malla Matemática Interactiva</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f5f5;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Malla Curricular Matemáticas Ingeniería</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
 
-    #canvas-container {
-      width: 100vw;
-      height: 100vh;
-      overflow: auto;
-    }
+  :root {
+    --color-analysis: #f7d9dc; /* light rose */
+    --color-algebra: #a7d8f7; /* light blue */
+    --color-geometry: #bee7b7; /* light green */
+    --color-arithmetic: #d8d8d8; /* light gray */
+    --color-approved: #4caf50;
+    --color-blocked: #ccc;
+    --tooltip-bg: #333;
+    --tooltip-color: #fff;
+    --arrow-color: #666;
+    --font-family: 'Quicksand', sans-serif;
+  }
 
-    svg {
-      width: 2000px;
-      height: 1600px;
-    }
+  * {
+    box-sizing: border-box;
+  }
 
-    .node rect, .node ellipse {
-      fill: white;
-      stroke: #666;
-      stroke-width: 2px;
-      rx: 10;
-      ry: 10;
-      cursor: pointer;
-    }
+  body {
+    margin: 0; 
+    font-family: var(--font-family);
+    background: #fafafa;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+  }
 
-    .node.approved rect, .node.approved ellipse {
-      fill: #c8f7c5;
-      stroke: #2ecc71;
-    }
+  h1 {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    user-select: none;
+    font-size: 1.6rem;
+    color: #444;
+  }
 
-    .node.locked rect, .node.locked ellipse {
-      fill: #ddd;
-      stroke: #aaa;
-      cursor: not-allowed;
-    }
+  #subtitle {
+    text-align: center;
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 1.3rem;
+    user-select: none;
+  }
 
-    .node text {
-      pointer-events: none;
-      font-size: 14px;
-      fill: #333;
-    }
+  #container {
+    max-width: 1280px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 3rem;
+  }
 
-    .arrow {
-      stroke: #333;
-      stroke-width: 1.5;
-      marker-end: url(#arrowhead);
-    }
-  </style>
+  /* Canvas area that holds the entire map */
+  #map {
+    position: relative;
+    width: 1200px;
+    height: 900px;
+    border: 1px solid #ddd;
+    background: white;
+    box-shadow: 0 3px 15px rgb(0 0 0 / 0.1);
+    border-radius: 8px;
+    user-select: none;
+  }
+
+  /* Units styling */
+  .unit {
+    position: absolute;
+    min-width: 120px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+    font-family: var(--font-family);
+    line-height: 1.2;
+  }
+  .unit:hover {
+    border-color: #777;
+  }
+  .unit.approved {
+    background-color: var(--color-approved);
+    border-color: #388e3c;
+    color: white;
+    cursor: default;
+    box-shadow: 0 0 12px rgba(76,175,80,0.7);
+  }
+  .unit.blocked {
+    background-color: var(--color-blocked);
+    border-color: #bbb;
+    color: #888;
+    cursor: default;
+    position: relative;
+  }
+  .unit.blocked:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--tooltip-bg);
+    color: var(--tooltip-color);
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s;
+    z-index: 10;
+  }
+  .unit.blocked::after {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Colors by category */
+  .analysis {
+    background-color: var(--color-analysis);
+    border-color: #c97b8e;
+    color: #5b2a39;
+  }
+  .algebra {
+    background-color: var(--color-algebra);
+    border-color: #4893ce;
+    color: #264d73;
+  }
+  .geometry {
+    background-color: var(--color-geometry);
+    border-color: #7ab85a;
+    color: #3a5a25;
+  }
+  .arithmetic {
+    background-color: var(--color-arithmetic);
+    border-color: #999;
+    color: #555;
+  }
+
+  /* Titles inside big units small text */
+  .small-text {
+    font-weight: 400;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-style: italic;
+    color: #444;
+    user-select: text;
+  }
+
+  /* Different shape for circles and bigger units */
+  .unit.circle {
+    border-radius: 50%;
+    padding: 14px 14px;
+    font-weight: 500;
+    font-size: 0.82rem;
+    min-width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .unit.big-circle {
+    min-width: 140px;
+    height: 140px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .unit.dashed-border {
+    border-style: dashed;
+  }
+  
+  /* Arrows container for svg lines */
+  #arrows {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: 1200px;
+    height: 900px;
+    overflow: visible;
+  }
+  svg {
+    overflow: visible;
+  }
+
+  /* Legend text for categories in map */
+  #labels-container {
+    position: absolute;
+    bottom: 15px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 1.8rem;
+    user-select: none;
+  }
+  .label {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #aaa;
+    padding: 0.15rem 0.3rem;
+    border-radius: 3px;
+    transition: color 0.3s;
+  }
+  .label.analysis {
+    color: var(--color-analysis);
+    font-style: italic;
+  }
+  .label.algebra {
+    color: var(--color-algebra);
+    font-style: italic;
+  }
+  .label.geometry {
+    color: var(--color-geometry);
+    font-style: italic;
+  }
+  .label.arithmetic {
+    color: var(--color-arithmetic);
+    font-style: italic;
+  }
+
+  /* Text "Empiece por aquí" bottom center */
+  #start-here {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    font-size: 0.78rem;
+    color: #c0392b;
+    font-weight: 600;
+    font-family: var(--font-family);
+    transform: translateX(-50%);
+    user-select: none;
+  }
+
+</style>
 </head>
 <body>
-  <div id="canvas-container">
-    <svg id="graph" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-          <polygon points="0 0, 10 3.5, 0 7" />
-        </marker>
-      </defs>
-      <!-- Aquí se insertarán dinámicamente los nodos y flechas -->
+<div id="container" aria-label="Mapa de la malla curricular de matemáticas para ingeniería">
+  <h1>GUÍA PROPUESTA PARA ESTUDIAR TEMAS DE MATEMÁTICA<br>PARA CARRERAS DE INGENIERÍA</h1>
+  <div id="subtitle">youtube.com/el traductor de ingeniería</div>
+  <div id="map" role="application" aria-describedby="start-here" tabindex="0">
+    <!-- Units -->
+    <!-- ARITMÉTICA -->
+    <div class="unit arithmetic big-circle" id="concepto_medir_contar" style="top: 840px; left: 560px;" title="Concepto de medir y contar">
+      Concepto<br>de medir y contar
+    </div>
+    <div class="unit arithmetic" id="elementos_basicos_geometria" style="top: 770px; left: 790px;" title="Elementos básicos de geometría">
+      Elementos básicos<br>de geometría
+    </div>
+    <div class="unit arithmetic" id="instrumentos_medicion" style="top: 770px; left: 640px;" title="Instrumentos y sistemas de medición">
+      Instrumentos y<br>sistemas de medición
+    </div>
+    <div class="unit arithmetic" id="numeros_naturales" style="top: 775px; left: 480px;" title="Números naturales">
+      Números naturales
+    </div>
+    <div class="unit arithmetic" id="numeros_enteros" style="top: 715px; left: 480px;" title="Números enteros">
+      Números enteros
+    </div>
+    <div class="unit arithmetic" id="numeros_racionales" style="top: 655px; left: 480px;" title="Números racionales">
+      Números racionales
+    </div>
+    <div class="unit arithmetic" id="numeros_irracionales" style="top: 595px; left: 480px;" title="Números irracionales">
+      Números irracionales
+    </div>
+    <div class="unit arithmetic" id="numeros_complejos" style="top: 535px; left: 480px;" title="Números complejos">
+      Números completos
+    </div>
+    <div class="unit arithmetic" id="teorema_fundamental_aritmetica" style="top: 775px; left: 360px;" title="Teorema Fundamental de la Aritmética">
+      Teorema Fundamental<br>de la Aritmética
+    </div>
+    <div class="unit arithmetic" id="numeros_primos" style="top: 715px; left: 360px;" title="Números primos">
+      Números primos
+    </div>
+
+    <!-- GEOMETRÍA -->
+    <div class="unit geometry" id="puntos_segmentos_angulos" style="top: 710px; left: 690px;" title="Puntos, segmentos y ángulos">
+      Puntos, segmentos<br>y ángulos
+    </div>
+    <div class="unit geometry" id="figuras_planas" style="top: 655px; left: 790px;" title="Figuras planas">
+      Figuras planas
+    </div>
+    <div class="unit geometry" id="poligonos" style="top: 600px; left: 727px;" title="Polígonos">
+      Polígonos
+    </div>
+    <div class="unit geometry" id="cuerpos" style="top: 560px; left: 860px;" title="Cuerpos">
+      Cuerpos
+    </div>
+    <div class="unit geometry" id="geometria_analitica_espacio" style="top: 470px; left: 910px;" title="Geometría analítica en el espacio (R3)">
+      Geometría analítica<br>en el espacio (R3)
+    </div>
+    <div class="unit geometry" id="geometria_analitica_plana" style="top: 520px; left: 760px;" title="Geometría analítica plana">
+      Geometría analítica<br>plana
+    </div>
+    <div class="unit geometry" id="curvas" style="top: 420px; left: 960px;" title="Curvas">
+      Curvas
+    </div>
+    <div class="unit geometry" id="rectas" style="top: 420px; left: 820px;" title="Rectas">
+      Rectas
+    </div>
+    <div class="unit geometry" id="conicas" style="top: 390px; left: 970px;" title="Cónicas">
+      Cónicas
+    </div>
+    <div class="unit geometry" id="superficies" style="top: 400px; left: 1100px;" title="Superficies">
+      Superficies
+    </div>
+    <div class="unit geometry" id="matrices" style="top: 360px; left: 1130px;" title="Matrices">
+      Matrices
+    </div>
+    <div class="unit geometry" id="trigonometria" style="top: 560px; left: 640px;" title="Trigonometría">
+      Trigonometría
+    </div>
+
+    <!-- ÁLGEBRA -->
+    <div class="unit algebra" id="representacion_simbolica" style="top: 460px; left: 620px;" title="Representación simbólica">
+      Representación simbólica
+    </div>
+    <div class="unit algebra" id="expresiones_algebricas" style="top: 520px; left: 600px;" title="Expresiones algebraicas">
+      Expresiones algebraicas
+    </div>
+    <div class="unit algebra" id="polinomios" style="top: 570px; left: 550px;" title="Polinomios">
+      Polinomios
+    </div>
+    <div class="unit algebra" id="ecuaciones" style="top: 615px; left: 610px;" title="Ecuaciones">
+      Ecuaciones
+    </div>
+    <div class="unit algebra" id="inecuaciones" style="top: 615px; left: 680px;" title="Inecuaciones">
+      Inecuaciones
+    </div>
+    <div class="unit algebra" id="teorema_fundamental_algebra" style="top: 490px; left: 520px;" title="Teorema Fundamental del Álgebra">
+      Teorema Fundamental<br>del Álgebra
+    </div>
+    <div class="unit algebra" id="sistemas_lineales" style="top: 440px; left: 540px;" title="Sistemas de ecuaciones lineales">
+      Sistemas de ecuaciones<br>lineales
+    </div>
+    <div class="unit algebra" id="sistemas_no_lineales" style="top: 400px; left: 530px;" title="Sistemas de ecuaciones no lineales">
+      Sistemas de ecuaciones<br>no lineales
+    </div>
+    <div class="unit algebra" id="funciones_trigonométricas" style="top: 350px; left: 610px;" title="Funciones trigonométricas">
+      Funciones<br>trigonométricas
+    </div>
+
+    <!-- ANÁLISIS -->
+    <div class="unit analysis" id="funciones_n_var_reales" style="top: 340px; left: 350px;" title="Funciones numéricas varias variables reales">
+      Funciones numéricas <br>varias variables reales
+    </div>
+    <div class="unit analysis" id="funciones_n_var_compleja" style="top: 210px; left: 240px;" title="Funciones numéricas de variable compleja">
+      Funciones numéricas<br>de variable compleja
+    </div>
+    <div class="unit analysis" id="funciones_vectoriales" style="top: 130px; left: 100px;" title="Funciones vectoriales">
+      Funciones<br>vectoriales
+    </div>
+    <div class="unit analysis" id="derivadas_parametricas" style="top: 120px; left: 20px;" title="Derivadas paramétricas">
+      Derivadas<br>paramétricas
+    </div>
+    <div class="unit analysis" id="funciones_parametricas" style="top: 75px; left: 30px;" title="Funciones paramétricas">
+      Funciones<br>paramétricas
+    </div>
+    <div class="unit analysis" id="parametrizacion_curvas" style="top: 145px; left: 410px;" title="Parametrización de curvas y superficies">
+      Parametrización<br>de curvas y<br>superficies
+    </div>
+    <div class="unit analysis" id="derivacion" style="top: 350px; left: 420px;" title="Derivación">
+      Derivación
+    </div>
+    <div class="unit analysis" id="limite" style="top: 390px; left: 320px;" title="Límite">
+      Límite
+    </div>
+    <div class="unit analysis" id="funciones_n_var_reales_unica" style="top: 430px; left: 250px;" title="Funciones numéricas de una variable real">
+      Funciones numéricas<br>de una variable real
+    </div>
+    <div class="unit analysis" id="limite_varias_variables" style="top: 290px; left: 430px;" title="Límite en varias variables">
+      Límite en<br>varias variables
+    </div>
+    <div class="unit analysis" id="estudio_funciones_var_real" style="top: 270px; left: 265px;" title="Estudio de funciones de una variable real">
+      Estudio de funciones<br>de una variable real
+    </div>
+    <div class="unit analysis" id="series_de_funciones" style="top: 375px; left: 160px;" title="Series de funciones">
+      Series de funciones
+    </div>
+    <div class="unit analysis" id="serie_de_taylor" style="top: 345px; left: 90px;" title="Serie de Taylor">
+      Serie de Taylor
+    </div>
+    <div class="unit analysis" id="series_numericas" style="top: 410px; left: 115px;" title="Series numéricas">
+      Series numéricas
+    </div>
+    <div class="unit analysis" id="sucesiones_numericas" style="top: 460px; left: 110px;" title="Sucesiones numéricas">
+      Sucesiones numéricas
+    </div>
+    <div class="unit analysis" id="estudio_convergencia" style="top: 460px; left: 210px;" title="Estudio de convergencia">
+      Estudio de convergencia
+    </div>
+    <div class="unit analysis" id="serie_geometrica" style="top: 485px; left: 140px;" title="Serie Geométrica">
+      Serie Geométrica
+    </div>
+    <div class="unit analysis" id="serie_telescopica" style="top: 515px; left: 140px;" title="Serie Telescópica">
+      Serie Telescópica
+    </div>
+    <div class="unit analysis" id="teorema_fundamental_calculo" style="top: 450px; left: 480px;" title="Teorema Fundamental del Cálculo">
+      Teorema Fundamental<br>del Cálculo
+    </div>
+    <div class="unit analysis" id="integracion" style="top: 400px; left: 530px;" title="Integración">
+      Integración
+    </div>
+    <div class="unit analysis" id="derivadas_parciales" style="top: 195px; left: 500px;" title="Derivadas parciales">
+      Derivadas parciales
+    </div>
+    <div class="unit analysis" id="integrales_dobles" style="top: 280px; left: 600px;" title="Integrales dobles">
+      Integrales dobles
+    </div>
+    <div class="unit analysis" id="integrales_triples" style="top: 220px; left: 650px;" title="Integrales triples">
+      Integrales triples
+    </div>
+    <div class="unit analysis" id="integrales_linea" style="top: 270px; left: 700px;" title="Integrales de línea">
+      Integrales de línea
+    </div>
+    <div class="unit analysis" id="derivada_direccional" style="top: 150px; left: 550px;" title="Derivada direccional">
+      Derivada direccional
+    </div>
+    <div class="unit analysis" id="analisis_fourier" style="top: 80px; left: 775px;" title="Análisis de Fourier">
+      Análisis de Fourier
+    </div>
+    <div class="unit analysis" id="funciones_exponenciales_logaritmicas" style="top: 430px; left: 500px;" title="Funciones exponenciales y logarítmicas">
+      Funciones exponenciales<br>y logarítmicas
+    </div>
+    <div class="unit analysis" id="funciones_numericas_var_compleja" style="top: 230px; left: 300px;" title="Funciones numéricas de variable compleja">
+      Funciones numéricas<br>de variable compleja
+    </div>
+
+    <!-- Extras: circles with text -->
+    <div class="unit arithmetic circle dashed-border" id="calc_combinados" style="top: 515px; left: 400px;" title="Cálculos combinados con números reales">
+      Cálculos<br>combinados<br>con números<br>reales
+    </div>
+    <div class="unit arithmetic circle dashed-border" id="operaciones_propiedades" style="top: 670px; left: 430px;" title="Operaciones y propiedades">
+      Operaciones<br>y propiedades
+    </div>
+
+    <!-- START here red text -->
+    <div id="start-here" aria-live="polite" aria-atomic="true" role="alert">Empiece por aquí</div>
+
+    <!-- Arrows container -->
+    <svg id="arrows" aria-hidden="true" focusable="false" >
+      <!-- Arrows are dynamically generated by JS -->
     </svg>
+
+    <!-- Legend at bottom -->
+    <div id="labels-container" aria-label="Categorías de matemáticas en el mapa">
+      <span class="label analysis">Análisis</span>
+      <span class="label algebra">Álgebra</span>
+      <span class="label geometry">Geometría</span>
+      <span class="label arithmetic">Aritmética</span>
+    </div>
   </div>
+</div>
 
-  <script>
-    const topics = [
-      {
-        id: "numeros",
-        label: "Números",
-        shape: "circle",
-        x: 50,
-        y: 50,
-        dependsOn: []
-      },
-      {
-        id: "operaciones",
-        label: "Operaciones y Propiedades",
-        shape: "rect",
-        x: 200,
-        y: 50,
-        dependsOn: ["numeros"]
-      },
-      {
-        id: "divisibilidad",
-        label: "Divisibilidad y Múltiplos",
-        shape: "rect",
-        x: 400,
-        y: 50,
-        dependsOn: ["operaciones"]
-      },
-      {
-        id: "mcm",
-        label: "MCD y MCM",
-        shape: "rect",
-        x: 600,
-        y: 50,
-        dependsOn: ["divisibilidad"]
-      }
-    ];
+<script>
+(() => {
+  /*
+    Model:
+    Each unit has:
+      - id (matching DOM id)
+      - dependencies (array of ids that must be approved prior)
+      - category (for color)
+      - position (already in css top/left)
+  */
 
-    const svg = document.getElementById("graph");
-    const approved = JSON.parse(localStorage.getItem("math-progress") || "[]");
+  const units = {
+    // ARITMÉTICA
+    "concepto_medir_contar": {
+      deps: [],
+      category: "arithmetic"
+    },
+    "elementos_basicos_geometria": {
+      deps: ["concepto_medir_contar"],
+      category: "arithmetic"
+    },
+    "instrumentos_medicion": {
+      deps: ["concepto_medir_contar"],
+      category: "arithmetic"
+    },
+    "numeros_naturales": {
+      deps: ["concepto_medir_contar"],
+      category: "arithmetic"
+    },
+    "numeros_enteros": {
+      deps: ["numeros_naturales"],
+      category: "arithmetic"
+    },
+    "numeros_racionales": {
+      deps: ["numeros_enteros"],
+      category: "arithmetic"
+    },
+    "numeros_irracionales": {
+      deps: ["numeros_racionales"],
+      category: "arithmetic"
+    },
+    "numeros_complejos": {
+      deps: ["numeros_irracionales"],
+      category: "arithmetic"
+    },
+    "teorema_fundamental_aritmetica": {
+      deps: ["numeros_naturales"],
+      category: "arithmetic"
+    },
+    "numeros_primos": {
+      deps: ["teorema_fundamental_aritmetica"],
+      category: "arithmetic"
+    },
 
-    function drawNode(topic) {
-      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      g.setAttribute("class", "node");
-      g.setAttribute("id", topic.id);
-      g.setAttribute("transform", `translate(${topic.x}, ${topic.y})`);
+    // GEOMETRÍA
+    "puntos_segmentos_angulos": {
+      deps: ["concepto_medir_contar"],
+      category: "geometry"
+    },
+    "figuras_planas": {
+      deps: ["puntos_segmentos_angulos"],
+      category: "geometry"
+    },
+    "poligonos": {
+      deps: ["figuras_planas"],
+      category: "geometry"
+    },
+    "cuerpos": {
+      deps: ["figuras_planas"],
+      category: "geometry"
+    },
+    "geometria_analitica_espacio": {
+      deps: ["cuerpos"],
+      category: "geometry"
+    },
+    "geometria_analitica_plana": {
+      deps: ["figuras_planas"],
+      category: "geometry"
+    },
+    "curvas": {
+      deps: ["geometria_analitica_espacio"],
+      category: "geometry"
+    },
+    "rectas": {
+      deps: ["geometria_analitica_plana"],
+      category: "geometry"
+    },
+    "conicas": {
+      deps: ["curvas", "rectas"],
+      category: "geometry"
+    },
+    "superficies": {
+      deps: ["conicas", "geometria_analitica_espacio"],
+      category: "geometry"
+    },
+    "matrices": {
+      deps: ["superficies"],
+      category: "geometry"
+    },
+    "trigonometria": {
+      deps: ["puntos_segmentos_angulos", "numeros_reales"],
+      category: "geometry"
+    },
 
-      const labelLength = topic.label.length * 7 + 10;
-      const width = Math.max(80, labelLength);
-      const height = 35;
+    // ÁLGEBRA
+    "representacion_simbolica": {
+      deps: ["concepto_medir_contar"],
+      category: "algebra"
+    },
+    "expresiones_algebricas": {
+      deps: ["representacion_simbolica"],
+      category: "algebra"
+    },
+    "polinomios": {
+      deps: ["expresiones_algebricas"],
+      category: "algebra"
+    },
+    "ecuaciones": {
+      deps: ["polinomios"],
+      category: "algebra"
+    },
+    "inecuaciones": {
+      deps: ["ecuaciones"],
+      category: "algebra"
+    },
+    "teorema_fundamental_algebra": {
+      deps: ["representacion_simbolica"],
+      category: "algebra"
+    },
+    "sistemas_lineales": {
+      deps: ["representacion_simbolica"],
+      category: "algebra"
+    },
+    "sistemas_no_lineales": {
+      deps: ["sistemas_lineales"],
+      category: "algebra"
+    },
+    "funciones_trigonométricas": {
+      deps: ["trigonometria"],
+      category: "algebra"
+    },
 
-      let shape;
-      if (topic.shape === "circle") {
-        shape = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-        shape.setAttribute("cx", width / 2);
-        shape.setAttribute("cy", height / 2);
-        shape.setAttribute("rx", width / 2);
-        shape.setAttribute("ry", height / 2);
-      } else {
-        shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        shape.setAttribute("width", width);
-        shape.setAttribute("height", height);
-      }
-
-      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("x", width / 2);
-      text.setAttribute("y", height / 2 + 5);
-      text.setAttribute("text-anchor", "middle");
-      text.textContent = topic.label;
-
-      g.appendChild(shape);
-      g.appendChild(text);
-      svg.appendChild(g);
-
-      const isApproved = approved.includes(topic.id);
-      const locked = topic.dependsOn.some(dep => !approved.includes(dep));
-      g.classList.add(isApproved ? "approved" : locked ? "locked" : "");
-
-      if (!locked) {
-        g.addEventListener("click", () => {
-          const index = approved.indexOf(topic.id);
-          if (index === -1) {
-            approved.push(topic.id);
-          } else {
-            approved.splice(index, 1);
-          }
-          localStorage.setItem("math-progress", JSON.stringify(approved));
-          location.reload();
-        });
-      } else {
-        g.setAttribute("title", "Debes aprobar los temas anteriores primero");
-      }
-
-      topic.width = width;
-      topic.height = height;
+    // ANÁLISIS
+    "funciones_n_var_reales": {
+      deps: ["funciones_n_var_reales_unica"],
+      category: "analysis"
+    },
+    "funciones_n_var_compleja": {
+      deps: ["funciones_vectoriales"],
+      category: "analysis"
+    },
+    "funciones_vectoriales": {
+      deps: ["funciones_parametricas"],
+      category: "analysis"
+    },
+    "derivadas_parametricas": {
+      deps: ["funciones_parametricas"],
+      category: "analysis"
+    },
+    "funciones_parametricas": {
+      deps: ["funciones_vectoriales"],
+      category: "analysis"
+    },
+    "parametrizacion_curvas": {
+      deps: ["funciones_parametricas", "funciones_n_var_reales"],
+      category: "analysis"
+    },
+    "derivacion": {
+      deps: ["funciones_n_var_reales_unica"],
+      category: "analysis"
+    },
+    "limite": {
+      deps: ["funciones_n_var_reales_unica"],
+      category: "analysis"
+    },
+    "funciones_n_var_reales_unica": {
+      deps: ["estudio_funciones_var_real"],
+      category: "analysis"
+    },
+    "limite_varias_variables": {
+      deps: ["funciones_n_var_reales"],
+      category: "analysis"
+    },
+    "estudio_funciones_var_real": {
+      deps: ["limite"],
+      category: "analysis"
+    },
+    "series_de_funciones": {
+      deps: ["estudio_convergencia"],
+      category: "analysis"
+    },
+    "serie_de_taylor": {
+      deps: ["series_de_funciones"],
+      category: "analysis"
+    },
+    "series_numericas": {
+      deps: ["sucesiones_numericas"],
+      category: "analysis"
+    },
+    "sucesiones_numericas": {
+      deps: [],
+      category: "analysis"
+    },
+    "estudio_convergencia": {
+      deps: ["sucesiones_numericas"],
+      category: "analysis"
+    },
+    "serie_geometrica": {
+      deps: ["estudio_convergencia"],
+      category: "analysis"
+    },
+    "serie_telescopica": {
+      deps: ["estudio_convergencia"],
+      category: "analysis"
+    },
+    "teorema_fundamental_calculo": {
+      deps: ["derivacion", "integracion"],
+      category: "analysis"
+    },
+    "integracion": {
+      deps: ["limite"],
+      category: "analysis"
+    },
+    "derivadas_parciales": {
+      deps: ["derivacion"],
+      category: "analysis"
+    },
+    "integrales_dobles": {
+      deps: ["integracion"],
+      category: "analysis"
+    },
+    "integrales_triples": {
+      deps: ["integrales_dobles"],
+      category: "analysis"
+    },
+    "integrales_linea": {
+      deps: ["integracion"],
+      category: "analysis"
+    },
+    "derivada_direccional": {
+      deps: ["derivadas_parciales"],
+      category: "analysis"
+    },
+    "analisis_fourier": {
+      deps: ["parametrizacion_curvas"],
+      category: "analysis"
+    },
+    "funciones_exponenciales_logaritmicas": {
+      deps: ["funciones_n_var_reales_unica"],
+      category: "analysis"
     }
+  };
 
-    function drawArrow(fromId, toId) {
-      const from = topics.find(t => t.id === fromId);
-      const to = topics.find(t => t.id === toId);
+  // Adjusted dependencies with critical ones added
+  // Add missing "numeros_reales" id for trigonometria
+  units["numeros_reales"] = {
+    deps: ["numeros_racionales", "numeros_irracionales"],
+    category: "arithmetic"
+  };
+  // Let trigonometria depend on "numeros_reales"
+  if (!units.trigonometria.deps.includes("numeros_reales")) {
+    units.trigonometria.deps.push("numeros_reales");
+  }
 
-      const x1 = from.x + from.width / 2;
-      const y1 = from.y + from.height;
-      const x2 = to.x + to.width / 2;
-      const y2 = to.y;
-
-      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.setAttribute("x1", x1);
-      line.setAttribute("y1", y1);
-      line.setAttribute("x2", x2);
-      line.setAttribute("y2", y2);
-      line.setAttribute("class", "arrow");
-      svg.appendChild(line);
+  // Helper function to get approval status from localStorage
+  function getApprovedUnits() {
+    try {
+      const saved = localStorage.getItem('malla_aprobadas');
+      if (!saved) return new Set();
+      return new Set(JSON.parse(saved));
+    } catch {
+      return new Set();
     }
+  }
 
-    topics.forEach(drawNode);
-    topics.forEach(topic => {
-      topic.dependsOn.forEach(dep => drawArrow(dep, topic.id));
+  // Save approval set to localStorage
+  function saveApprovedUnits(approvedSet) {
+    localStorage.setItem('malla_aprobadas', JSON.stringify([...approvedSet]));
+  }
+
+  // Check if all dependencies of a unit are approved
+  function dependenciesApproved(unitId, approvedSet) {
+    const deps = units[unitId].deps || [];
+    return deps.every(d => approvedSet.has(d));
+  }
+
+  // Build an array of arrows (edges) connecting from -> to
+  // We draw arrows from each dependency to this unit
+  const arrowsData = [];
+  for (const [unitId, unitData] of Object.entries(units)) {
+    (unitData.deps || []).forEach(dep => {
+      if (units[dep]) {
+        arrowsData.push({from: dep, to: unitId});
+      }
     });
-  </script>
+  }
+
+  // Get element coordinates center for arrow drawing
+  function getUnitCenter(el) {
+    const rect = el.getBoundingClientRect();
+    const parentRect = el.parentElement.getBoundingClientRect();
+    // Relative to parent (#map)
+    const cx = rect.left - parentRect.left + rect.width/2;
+    const cy = rect.top - parentRect.top + rect.height/2;
+    return {x: cx, y: cy};
+  }
+
+  // Draw line with arrowhead svg
+  function drawArrows() {
+    const svg = document.getElementById('arrows');
+    svg.innerHTML = '';
+
+    // Create marker for arrowhead once
+    const ns = "http://www.w3.org/2000/svg";
+    const defs = document.createElementNS(ns, 'defs');
+    const marker = document.createElementNS(ns, 'marker');
+    marker.setAttribute('id', 'arrowhead');
+    marker.setAttribute('markerWidth', '10');
+    marker.setAttribute('markerHeight', '7');
+    marker.setAttribute('refX', '10');
+    marker.setAttribute('refY', '3.5');
+    marker.setAttribute('orient', 'auto');
+    marker.setAttribute('fill', 'var(--arrow-color)');
+    const arrowPath = document.createElementNS(ns, 'path');
+    arrowPath.setAttribute('d', 'M0,0 L10,3.5 L0,7 Z');
+    marker.appendChild(arrowPath);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+
+    // Draw arrows
+    arrowsData.forEach(({from, to}) => {
+      const fromEl = document.getElementById(from);
+      const toEl = document.getElementById(to);
+      if (!fromEl || !toEl) return;
+
+      const start = getUnitCenter(fromEl);
+      const end = getUnitCenter(toEl);
+
+      // Calculate a simple straight line with some offset from rectangles
+      // We'll offset start and end from center depending on angle
+
+      // Vector from start to end
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 1) return;
+      // Unit vector
+      const ux = dx / dist;
+      const uy = dy / dist;
+
+      // Offset radius for start and end to avoid overlap with boxes
+      // Approximate radius by half diagonal of the box (roughly 50)
+      const offset = 42; // px offset from center to edge
+
+      const sx = start.x + ux * offset;
+      const sy = start.y + uy * offset;
+      const ex = end.x - ux * offset;
+      const ey = end.y - uy * offset;
+
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', sx);
+      line.setAttribute('y1', sy);
+      line.setAttribute('x2', ex);
+      line.setAttribute('y2', ey);
+      line.setAttribute('stroke', 'var(--arrow-color)');
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('marker-end', 'url(#arrowhead)');
+      svg.appendChild(line);
+    });
+  }
+
+  // Update UI according to approved and blocked
+  function updateUI() {
+    const approved = getApprovedUnits();
+
+    for (const unitId in units) {
+      const el = document.getElementById(unitId);
+      if (!el) continue;
+
+      if (approved.has(unitId)) {
+        el.classList.add('approved');
+        el.classList.remove('blocked');
+        el.setAttribute('aria-pressed', 'true');
+        el.removeAttribute('data-tooltip');
+        el.removeAttribute('tabindex');
+        el.style.pointerEvents = "auto";
+        continue;
+      }
+
+      // Check dependencies approved
+      if (dependenciesApproved(unitId, approved)) {
+        // Unlocked, not approved
+        el.classList.remove('approved');
+        el.classList.remove('blocked');
+        el.setAttribute('aria-pressed', 'false');
+        el.setAttribute('tabindex', '0');
+        el.style.pointerEvents = "auto";
+        el.removeAttribute('data-tooltip');
+      } else {
+        // Blocked
+        el.classList.remove('approved');
+        el.classList.add('blocked');
+        el.setAttribute('aria-pressed', 'false');
+        el.removeAttribute('tabindex');
+        el.style.pointerEvents = "none";
+        el.setAttribute('data-tooltip', 'Debe aprobar unidades previas');
+      }
+    }
+  }
+
+  // Initialization: attach click handlers
+  window.addEventListener('load', () => {
+    updateUI();
+    drawArrows();
+
+    // Handle click on units
+    for (const unitId in units) {
+      const el = document.getElementById(unitId);
+      if (!el) continue;
+      el.addEventListener('click', () => {
+        // If blocked, ignore click
+        if (el.classList.contains('blocked')) return;
+
+        // Toggle approved
+        const approved = getApprovedUnits();
+
+        if (approved.has(unitId)) {
+          // Unapprove
+          approved.delete(unitId);
+          // On unapprove also unapprove dependents recursively
+          function unapproveDependents(id) {
+            for (const [key, data] of Object.entries(units)) {
+              if (data.deps.includes(id) && approved.has(key)) {
+                approved.delete(key);
+                unapproveDependents(key);
+              }
+            }
+          }
+          unapproveDependents(unitId);
+        } else {
+          // Approve only if dependencies approved
+          if (dependenciesApproved(unitId, approved)) {
+            approved.add(unitId);
+          }
+        }
+        saveApprovedUnits(approved);
+        updateUI();
+      });
+
+      // Keyboard accessibility (Enter key toggles)
+      el.addEventListener('keydown', (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          el.click();
+        }
+      });
+    }
+  });
+
+  // Responsive redraw arrows on resize or scroll
+  window.addEventListener('resize', () => {
+    drawArrows();
+  });
+})();
+</script>
 </body>
 </html>
+
