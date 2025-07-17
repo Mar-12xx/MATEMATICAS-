@@ -1,260 +1,189 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Malla Matemática Ingeniería</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Malla Matemática Interactiva</title>
   <style>
-    :root {
-      --bg: #f5f7fa;
-      --text: #2f3640;
-      --card-bg: #ffffff;
-      --border: #ccc;
-      --aritmetica: #4a69bd;
-      --algebra: #82ccdd;
-      --geometria: #78e08f;
-      --analisis: #f8a5c2;
-      --approved: #58b368;
-      --locked: #d6d6d6;
-    }
-    * {
-      box-sizing: border-box;
-    }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg);
       margin: 0;
-      padding: 2rem;
-      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
     }
-    h1 {
-      text-align: center;
-      color: var(--aritmetica);
-      margin-bottom: 1rem;
-    }
-    .controls {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .controls button {
-      padding: 0.5rem 1rem;
-      margin: 0.3rem;
-      border: none;
-      background: var(--aritmetica);
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-    }
-    .unit {
-      position: relative;
-      padding: 1rem;
-      border-radius: 10px;
-      background-color: var(--card-bg);
-      border: 2px solid var(--border);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      width: 180px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      z-index: 1;
-    }
-    .unit.aritmetica { border-color: var(--aritmetica); }
-    .unit.algebra { border-color: var(--algebra); }
-    .unit.geometria { border-color: var(--geometria); }
-    .unit.analisis { border-color: var(--analisis); }
 
-    .unit:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      overflow: auto;
     }
-    .unit.approved {
-      background-color: var(--approved);
-      color: white;
-      border-color: #3b9448;
+
+    svg {
+      width: 2000px;
+      height: 1600px;
     }
-    .unit.locked {
-      background-color: var(--locked);
-      color: #666;
+
+    .node rect, .node ellipse {
+      fill: white;
+      stroke: #666;
+      stroke-width: 2px;
+      rx: 10;
+      ry: 10;
+      cursor: pointer;
+    }
+
+    .node.approved rect, .node.approved ellipse {
+      fill: #c8f7c5;
+      stroke: #2ecc71;
+    }
+
+    .node.locked rect, .node.locked ellipse {
+      fill: #ddd;
+      stroke: #aaa;
       cursor: not-allowed;
     }
-    .unit.locked:hover {
-      transform: none;
-      box-shadow: none;
-    }
-    .unit.locked::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: -1.7rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #333;
-      color: #fff;
-      padding: 0.3rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      display: none;
-      z-index: 10;
-    }
-    .unit.locked:hover::after {
-      display: block;
-    }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
+
+    .node text {
       pointer-events: none;
-      z-index: 0;
+      font-size: 14px;
+      fill: #333;
+    }
+
+    .arrow {
+      stroke: #333;
+      stroke-width: 1.5;
+      marker-end: url(#arrowhead);
     }
   </style>
 </head>
 <body>
-  <h1>Malla Curricular Matemática</h1>
-  <div class="controls">
-    <button onclick="resetProgress()">🔁 Resetear progreso</button>
-    <button onclick="exportProgress()">💾 Exportar progreso</button>
+  <div id="canvas-container">
+    <svg id="graph" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" />
+        </marker>
+      </defs>
+      <!-- Aquí se insertarán dinámicamente los nodos y flechas -->
+    </svg>
   </div>
-  <div class="grid" id="units"></div>
-  <canvas id="canvas"></canvas>
 
   <script>
-    const data = [
-      // Aritmética
-      { id: 'sistemaDecimal', label: 'Sistema de numeración decimal', deps: [], group: 'aritmetica' },
-      { id: 'naturales', label: 'Números naturales', deps: ['sistemaDecimal'], group: 'aritmetica' },
-      { id: 'enteros', label: 'Números enteros', deps: ['naturales'], group: 'aritmetica' },
-      { id: 'fracciones', label: 'Fracciones', deps: ['naturales'], group: 'aritmetica' },
-      { id: 'decimales', label: 'Números decimales', deps: ['naturales'], group: 'aritmetica' },
-      { id: 'primos', label: 'Números primos', deps: ['naturales'], group: 'aritmetica' },
-      { id: 'operaciones', label: 'Operaciones combinadas', deps: ['enteros', 'fracciones', 'decimales'], group: 'aritmetica' },
-      { id: 'representacion', label: 'Representación', deps: ['operaciones'], group: 'algebra' },
-
-      // Álgebra
-      { id: 'expresiones', label: 'Expresiones algebraicas', deps: ['representacion'], group: 'algebra' },
-      { id: 'polinomios', label: 'Polinomios', deps: ['expresiones'], group: 'algebra' },
-      { id: 'ecuaciones', label: 'Ecuaciones', deps: ['polinomios'], group: 'algebra' },
-      { id: 'sistemas', label: 'Sistemas de ecuaciones', deps: ['ecuaciones'], group: 'algebra' },
-
-      // Geometría
-      { id: 'rectas', label: 'Rectas', deps: ['representacion'], group: 'geometria' },
-      { id: 'angulos', label: 'Ángulos', deps: ['rectas'], group: 'geometria' },
-      { id: 'figuras', label: 'Figuras planas', deps: ['angulos'], group: 'geometria' },
-      { id: 'trigonometria', label: 'Trigonometría', deps: ['figuras'], group: 'geometria' },
-
-      // Análisis
-      { id: 'limite', label: 'Límite', deps: ['ecuaciones'], group: 'analisis' },
-      { id: 'derivada', label: 'Derivada', deps: ['limite'], group: 'analisis' },
-      { id: 'integral', label: 'Integral', deps: ['derivada'], group: 'analisis' }
+    const topics = [
+      {
+        id: "numeros",
+        label: "Números",
+        shape: "circle",
+        x: 50,
+        y: 50,
+        dependsOn: []
+      },
+      {
+        id: "operaciones",
+        label: "Operaciones y Propiedades",
+        shape: "rect",
+        x: 200,
+        y: 50,
+        dependsOn: ["numeros"]
+      },
+      {
+        id: "divisibilidad",
+        label: "Divisibilidad y Múltiplos",
+        shape: "rect",
+        x: 400,
+        y: 50,
+        dependsOn: ["operaciones"]
+      },
+      {
+        id: "mcm",
+        label: "MCD y MCM",
+        shape: "rect",
+        x: 600,
+        y: 50,
+        dependsOn: ["divisibilidad"]
+      }
     ];
 
-    const container = document.getElementById('units');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+    const svg = document.getElementById("graph");
+    const approved = JSON.parse(localStorage.getItem("math-progress") || "[]");
 
-    function saveProgress(id, state) {
-      const progress = JSON.parse(localStorage.getItem('progress')) || {};
-      progress[id] = state;
-      localStorage.setItem('progress', JSON.stringify(progress));
-    }
+    function drawNode(topic) {
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      g.setAttribute("class", "node");
+      g.setAttribute("id", topic.id);
+      g.setAttribute("transform", `translate(${topic.x}, ${topic.y})`);
 
-    function loadProgress() {
-      return JSON.parse(localStorage.getItem('progress')) || {};
-    }
+      const labelLength = topic.label.length * 7 + 10;
+      const width = Math.max(80, labelLength);
+      const height = 35;
 
-    function resetProgress() {
-      if (confirm("¿Seguro que querés reiniciar tu progreso?")) {
-        localStorage.removeItem('progress');
-        createUnits();
-        drawArrows();
+      let shape;
+      if (topic.shape === "circle") {
+        shape = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+        shape.setAttribute("cx", width / 2);
+        shape.setAttribute("cy", height / 2);
+        shape.setAttribute("rx", width / 2);
+        shape.setAttribute("ry", height / 2);
+      } else {
+        shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        shape.setAttribute("width", width);
+        shape.setAttribute("height", height);
       }
-    }
 
-    function exportProgress() {
-      const progress = localStorage.getItem('progress');
-      const blob = new Blob([progress], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'progreso_matematica.json';
-      a.click();
-    }
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", width / 2);
+      text.setAttribute("y", height / 2 + 5);
+      text.setAttribute("text-anchor", "middle");
+      text.textContent = topic.label;
 
-    function drawArrows() {
-      canvas.width = document.body.scrollWidth;
-      canvas.height = document.body.scrollHeight;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      data.forEach(unit => {
-        const fromEl = document.getElementById(unit.id);
-        unit.deps.forEach(dep => {
-          const toEl = document.getElementById(dep);
-          if (fromEl && toEl) {
-            const fromRect = fromEl.getBoundingClientRect();
-            const toRect = toEl.getBoundingClientRect();
-            const x1 = toRect.left + toRect.width / 2 + window.scrollX;
-            const y1 = toRect.bottom + window.scrollY;
-            const x2 = fromRect.left + fromRect.width / 2 + window.scrollX;
-            const y2 = fromRect.top + window.scrollY;
+      g.appendChild(shape);
+      g.appendChild(text);
+      svg.appendChild(g);
 
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.strokeStyle = '#888';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+      const isApproved = approved.includes(topic.id);
+      const locked = topic.dependsOn.some(dep => !approved.includes(dep));
+      g.classList.add(isApproved ? "approved" : locked ? "locked" : "");
 
-            ctx.beginPath();
-            ctx.moveTo(x2, y2);
-            ctx.lineTo(x2 - 5, y2 - 10);
-            ctx.lineTo(x2 + 5, y2 - 10);
-            ctx.closePath();
-            ctx.fillStyle = '#888';
-            ctx.fill();
+      if (!locked) {
+        g.addEventListener("click", () => {
+          const index = approved.indexOf(topic.id);
+          if (index === -1) {
+            approved.push(topic.id);
+          } else {
+            approved.splice(index, 1);
           }
+          localStorage.setItem("math-progress", JSON.stringify(approved));
+          location.reload();
         });
-      });
+      } else {
+        g.setAttribute("title", "Debes aprobar los temas anteriores primero");
+      }
+
+      topic.width = width;
+      topic.height = height;
     }
 
-    function createUnits() {
-      const progress = loadProgress();
-      container.innerHTML = '';
-      data.forEach(unit => {
-        const el = document.createElement('div');
-        el.className = `unit ${unit.group}`;
-        el.id = unit.id;
-        el.textContent = unit.label;
+    function drawArrow(fromId, toId) {
+      const from = topics.find(t => t.id === fromId);
+      const to = topics.find(t => t.id === toId);
 
-        const depsApproved = unit.deps.every(dep => progress[dep]);
-        const isApproved = progress[unit.id];
+      const x1 = from.x + from.width / 2;
+      const y1 = from.y + from.height;
+      const x2 = to.x + to.width / 2;
+      const y2 = to.y;
 
-        if (!depsApproved && !isApproved) {
-          el.classList.add('locked');
-          const missing = unit.deps.filter(dep => !progress[dep]).map(d => data.find(u => u.id === d).label).join(', ');
-          el.setAttribute('data-tooltip', `Falta: ${missing}`);
-        } else {
-          el.addEventListener('click', () => {
-            const currentState = el.classList.contains('approved');
-            el.classList.toggle('approved');
-            saveProgress(unit.id, !currentState);
-            createUnits();
-            drawArrows();
-          });
-        }
-
-        if (isApproved) el.classList.add('approved');
-        container.appendChild(el);
-      });
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2);
+      line.setAttribute("class", "arrow");
+      svg.appendChild(line);
     }
 
-    window.addEventListener('load', () => {
-      createUnits();
-      setTimeout(drawArrows, 100);
+    topics.forEach(drawNode);
+    topics.forEach(topic => {
+      topic.dependsOn.forEach(dep => drawArrow(dep, topic.id));
     });
-    window.addEventListener('resize', drawArrows);
   </script>
 </body>
 </html>
