@@ -1,932 +1,788 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Malla Curricular Matemáticas Ingeniería</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular - Matemática para Ingeniería</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  :root {
-    --color-analysis: #f7d9dc; /* light rose */
-    --color-algebra: #a7d8f7; /* light blue */
-    --color-geometry: #bee7b7; /* light green */
-    --color-arithmetic: #d8d8d8; /* light gray */
-    --color-approved: #4caf50;
-    --color-blocked: #ccc;
-    --tooltip-bg: #333;
-    --tooltip-color: #fff;
-    --arrow-color: #666;
-    --font-family: 'Quicksand', sans-serif;
-  }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-  * {
-    box-sizing: border-box;
-  }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
 
-  body {
-    margin: 0; 
-    font-family: var(--font-family);
-    background: #fafafa;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    padding: 1rem;
-  }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-  h1 {
-    text-align: center;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    user-select: none;
-    font-size: 1.6rem;
-    color: #444;
-  }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
 
-  #subtitle {
-    text-align: center;
-    font-weight: 400;
-    font-size: 0.85rem;
-    color: #777;
-    margin-bottom: 1.3rem;
-    user-select: none;
-  }
+        .curriculum-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            position: relative;
+        }
 
-  #container {
-    max-width: 1280px;
-    width: 100%;
-    overflow-x: auto;
-    padding-bottom: 3rem;
-  }
+        .subject-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
 
-  /* Canvas area that holds the entire map */
-  #map {
-    position: relative;
-    width: 1200px;
-    height: 900px;
-    border: 1px solid #ddd;
-    background: white;
-    box-shadow: 0 3px 15px rgb(0 0 0 / 0.1);
-    border-radius: 8px;
-    user-select: none;
-  }
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
 
-  /* Units styling */
-  .unit {
-    position: absolute;
-    min-width: 120px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 2px solid transparent;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
-    font-family: var(--font-family);
-    line-height: 1.2;
-  }
-  .unit:hover {
-    border-color: #777;
-  }
-  .unit.approved {
-    background-color: var(--color-approved);
-    border-color: #388e3c;
-    color: white;
-    cursor: default;
-    box-shadow: 0 0 12px rgba(76,175,80,0.7);
-  }
-  .unit.blocked {
-    background-color: var(--color-blocked);
-    border-color: #bbb;
-    color: #888;
-    cursor: default;
-    position: relative;
-  }
-  .unit.blocked:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--tooltip-bg);
-    color: var(--tooltip-color);
-    padding: 6px 10px;
-    border-radius: 5px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 1;
-    transition: opacity 0.3s;
-    z-index: 10;
-  }
-  .unit.blocked::after {
-    opacity: 0;
-    pointer-events: none;
-  }
+        .subject-card.available {
+            border-color: #3498db;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
 
-  /* Colors by category */
-  .analysis {
-    background-color: var(--color-analysis);
-    border-color: #c97b8e;
-    color: #5b2a39;
-  }
-  .algebra {
-    background-color: var(--color-algebra);
-    border-color: #4893ce;
-    color: #264d73;
-  }
-  .geometry {
-    background-color: var(--color-geometry);
-    border-color: #7ab85a;
-    color: #3a5a25;
-  }
-  .arithmetic {
-    background-color: var(--color-arithmetic);
-    border-color: #999;
-    color: #555;
-  }
+        .subject-card.available:hover {
+            border-color: #2980b9;
+        }
 
-  /* Titles inside big units small text */
-  .small-text {
-    font-weight: 400;
-    font-size: 0.75rem;
-    margin-top: 4px;
-    font-style: italic;
-    color: #444;
-    user-select: text;
-  }
+        .subject-card.completed {
+            border-color: #27ae60;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        }
 
-  /* Different shape for circles and bigger units */
-  .unit.circle {
-    border-radius: 50%;
-    padding: 14px 14px;
-    font-weight: 500;
-    font-size: 0.82rem;
-    min-width: 90px;
-    height: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  .unit.big-circle {
-    min-width: 140px;
-    height: 140px;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  .unit.dashed-border {
-    border-style: dashed;
-  }
-  
-  /* Arrows container for svg lines */
-  #arrows {
-    position: absolute;
-    pointer-events: none;
-    top: 0;
-    left: 0;
-    width: 1200px;
-    height: 900px;
-    overflow: visible;
-  }
-  svg {
-    overflow: visible;
-  }
+        .subject-card.blocked {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
-  /* Legend text for categories in map */
-  #labels-container {
-    position: absolute;
-    bottom: 15px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 1.8rem;
-    user-select: none;
-  }
-  .label {
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: #aaa;
-    padding: 0.15rem 0.3rem;
-    border-radius: 3px;
-    transition: color 0.3s;
-  }
-  .label.analysis {
-    color: var(--color-analysis);
-    font-style: italic;
-  }
-  .label.algebra {
-    color: var(--color-algebra);
-    font-style: italic;
-  }
-  .label.geometry {
-    color: var(--color-geometry);
-    font-style: italic;
-  }
-  .label.arithmetic {
-    color: var(--color-arithmetic);
-    font-style: italic;
-  }
+        .subject-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
 
-  /* Text "Empiece por aquí" bottom center */
-  #start-here {
-    position: absolute;
-    bottom: 5px;
-    left: 50%;
-    font-size: 0.78rem;
-    color: #c0392b;
-    font-weight: 600;
-    font-family: var(--font-family);
-    transform: translateX(-50%);
-    user-select: none;
-  }
+        .subject-area {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
 
-</style>
+        .subject-status {
+            text-align: center;
+            font-size: 0.9em;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+
+        .status-available {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-completed {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-blocked {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #2c3e50;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 200px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .tooltip:after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #2c3e50 transparent transparent transparent;
+        }
+
+        .reset-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .area-analisis { border-left: 5px solid #ff6b6b; }
+        .area-algebra { border-left: 5px solid #4ecdc4; }
+        .area-geometria { border-left: 5px solid #45b7d1; }
+        .area-aritmetica { border-left: 5px solid #f9ca24; }
+
+        @media (max-width: 768px) {
+            .curriculum-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div id="container" aria-label="Mapa de la malla curricular de matemáticas para ingeniería">
-  <h1>GUÍA PROPUESTA PARA ESTUDIAR TEMAS DE MATEMÁTICA<br>PARA CARRERAS DE INGENIERÍA</h1>
-  <div id="subtitle">youtube.com/el traductor de ingeniería</div>
-  <div id="map" role="application" aria-describedby="start-here" tabindex="0">
-    <!-- Units -->
-    <!-- ARITMÉTICA -->
-    <div class="unit arithmetic big-circle" id="concepto_medir_contar" style="top: 840px; left: 560px;" title="Concepto de medir y contar">
-      Concepto<br>de medir y contar
-    </div>
-    <div class="unit arithmetic" id="elementos_basicos_geometria" style="top: 770px; left: 790px;" title="Elementos básicos de geometría">
-      Elementos básicos<br>de geometría
-    </div>
-    <div class="unit arithmetic" id="instrumentos_medicion" style="top: 770px; left: 640px;" title="Instrumentos y sistemas de medición">
-      Instrumentos y<br>sistemas de medición
-    </div>
-    <div class="unit arithmetic" id="numeros_naturales" style="top: 775px; left: 480px;" title="Números naturales">
-      Números naturales
-    </div>
-    <div class="unit arithmetic" id="numeros_enteros" style="top: 715px; left: 480px;" title="Números enteros">
-      Números enteros
-    </div>
-    <div class="unit arithmetic" id="numeros_racionales" style="top: 655px; left: 480px;" title="Números racionales">
-      Números racionales
-    </div>
-    <div class="unit arithmetic" id="numeros_irracionales" style="top: 595px; left: 480px;" title="Números irracionales">
-      Números irracionales
-    </div>
-    <div class="unit arithmetic" id="numeros_complejos" style="top: 535px; left: 480px;" title="Números complejos">
-      Números completos
-    </div>
-    <div class="unit arithmetic" id="teorema_fundamental_aritmetica" style="top: 775px; left: 360px;" title="Teorema Fundamental de la Aritmética">
-      Teorema Fundamental<br>de la Aritmética
-    </div>
-    <div class="unit arithmetic" id="numeros_primos" style="top: 715px; left: 360px;" title="Números primos">
-      Números primos
+    <button class="reset-btn" onclick="resetProgress()">🔄 Reiniciar Progreso</button>
+    
+    <div class="container">
+        <h1>GUÍA PROPUESTA PARA ESTUDIAR TEMAS DE MATEMÁTICA</h1>
+        <p class="subtitle">PARA CARRERAS DE INGENIERÍA</p>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0% completado</div>
+        
+        <div class="curriculum-grid" id="curriculumGrid">
+            <!-- Las materias se generarán dinámicamente -->
+        </div>
     </div>
 
-    <!-- GEOMETRÍA -->
-    <div class="unit geometry" id="puntos_segmentos_angulos" style="top: 710px; left: 690px;" title="Puntos, segmentos y ángulos">
-      Puntos, segmentos<br>y ángulos
-    </div>
-    <div class="unit geometry" id="figuras_planas" style="top: 655px; left: 790px;" title="Figuras planas">
-      Figuras planas
-    </div>
-    <div class="unit geometry" id="poligonos" style="top: 600px; left: 727px;" title="Polígonos">
-      Polígonos
-    </div>
-    <div class="unit geometry" id="cuerpos" style="top: 560px; left: 860px;" title="Cuerpos">
-      Cuerpos
-    </div>
-    <div class="unit geometry" id="geometria_analitica_espacio" style="top: 470px; left: 910px;" title="Geometría analítica en el espacio (R3)">
-      Geometría analítica<br>en el espacio (R3)
-    </div>
-    <div class="unit geometry" id="geometria_analitica_plana" style="top: 520px; left: 760px;" title="Geometría analítica plana">
-      Geometría analítica<br>plana
-    </div>
-    <div class="unit geometry" id="curvas" style="top: 420px; left: 960px;" title="Curvas">
-      Curvas
-    </div>
-    <div class="unit geometry" id="rectas" style="top: 420px; left: 820px;" title="Rectas">
-      Rectas
-    </div>
-    <div class="unit geometry" id="conicas" style="top: 390px; left: 970px;" title="Cónicas">
-      Cónicas
-    </div>
-    <div class="unit geometry" id="superficies" style="top: 400px; left: 1100px;" title="Superficies">
-      Superficies
-    </div>
-    <div class="unit geometry" id="matrices" style="top: 360px; left: 1130px;" title="Matrices">
-      Matrices
-    </div>
-    <div class="unit geometry" id="trigonometria" style="top: 560px; left: 640px;" title="Trigonometría">
-      Trigonometría
-    </div>
+    <div class="tooltip" id="tooltip"></div>
 
-    <!-- ÁLGEBRA -->
-    <div class="unit algebra" id="representacion_simbolica" style="top: 460px; left: 620px;" title="Representación simbólica">
-      Representación simbólica
-    </div>
-    <div class="unit algebra" id="expresiones_algebricas" style="top: 520px; left: 600px;" title="Expresiones algebraicas">
-      Expresiones algebraicas
-    </div>
-    <div class="unit algebra" id="polinomios" style="top: 570px; left: 550px;" title="Polinomios">
-      Polinomios
-    </div>
-    <div class="unit algebra" id="ecuaciones" style="top: 615px; left: 610px;" title="Ecuaciones">
-      Ecuaciones
-    </div>
-    <div class="unit algebra" id="inecuaciones" style="top: 615px; left: 680px;" title="Inecuaciones">
-      Inecuaciones
-    </div>
-    <div class="unit algebra" id="teorema_fundamental_algebra" style="top: 490px; left: 520px;" title="Teorema Fundamental del Álgebra">
-      Teorema Fundamental<br>del Álgebra
-    </div>
-    <div class="unit algebra" id="sistemas_lineales" style="top: 440px; left: 540px;" title="Sistemas de ecuaciones lineales">
-      Sistemas de ecuaciones<br>lineales
-    </div>
-    <div class="unit algebra" id="sistemas_no_lineales" style="top: 400px; left: 530px;" title="Sistemas de ecuaciones no lineales">
-      Sistemas de ecuaciones<br>no lineales
-    </div>
-    <div class="unit algebra" id="funciones_trigonométricas" style="top: 350px; left: 610px;" title="Funciones trigonométricas">
-      Funciones<br>trigonométricas
-    </div>
-
-    <!-- ANÁLISIS -->
-    <div class="unit analysis" id="funciones_n_var_reales" style="top: 340px; left: 350px;" title="Funciones numéricas varias variables reales">
-      Funciones numéricas <br>varias variables reales
-    </div>
-    <div class="unit analysis" id="funciones_n_var_compleja" style="top: 210px; left: 240px;" title="Funciones numéricas de variable compleja">
-      Funciones numéricas<br>de variable compleja
-    </div>
-    <div class="unit analysis" id="funciones_vectoriales" style="top: 130px; left: 100px;" title="Funciones vectoriales">
-      Funciones<br>vectoriales
-    </div>
-    <div class="unit analysis" id="derivadas_parametricas" style="top: 120px; left: 20px;" title="Derivadas paramétricas">
-      Derivadas<br>paramétricas
-    </div>
-    <div class="unit analysis" id="funciones_parametricas" style="top: 75px; left: 30px;" title="Funciones paramétricas">
-      Funciones<br>paramétricas
-    </div>
-    <div class="unit analysis" id="parametrizacion_curvas" style="top: 145px; left: 410px;" title="Parametrización de curvas y superficies">
-      Parametrización<br>de curvas y<br>superficies
-    </div>
-    <div class="unit analysis" id="derivacion" style="top: 350px; left: 420px;" title="Derivación">
-      Derivación
-    </div>
-    <div class="unit analysis" id="limite" style="top: 390px; left: 320px;" title="Límite">
-      Límite
-    </div>
-    <div class="unit analysis" id="funciones_n_var_reales_unica" style="top: 430px; left: 250px;" title="Funciones numéricas de una variable real">
-      Funciones numéricas<br>de una variable real
-    </div>
-    <div class="unit analysis" id="limite_varias_variables" style="top: 290px; left: 430px;" title="Límite en varias variables">
-      Límite en<br>varias variables
-    </div>
-    <div class="unit analysis" id="estudio_funciones_var_real" style="top: 270px; left: 265px;" title="Estudio de funciones de una variable real">
-      Estudio de funciones<br>de una variable real
-    </div>
-    <div class="unit analysis" id="series_de_funciones" style="top: 375px; left: 160px;" title="Series de funciones">
-      Series de funciones
-    </div>
-    <div class="unit analysis" id="serie_de_taylor" style="top: 345px; left: 90px;" title="Serie de Taylor">
-      Serie de Taylor
-    </div>
-    <div class="unit analysis" id="series_numericas" style="top: 410px; left: 115px;" title="Series numéricas">
-      Series numéricas
-    </div>
-    <div class="unit analysis" id="sucesiones_numericas" style="top: 460px; left: 110px;" title="Sucesiones numéricas">
-      Sucesiones numéricas
-    </div>
-    <div class="unit analysis" id="estudio_convergencia" style="top: 460px; left: 210px;" title="Estudio de convergencia">
-      Estudio de convergencia
-    </div>
-    <div class="unit analysis" id="serie_geometrica" style="top: 485px; left: 140px;" title="Serie Geométrica">
-      Serie Geométrica
-    </div>
-    <div class="unit analysis" id="serie_telescopica" style="top: 515px; left: 140px;" title="Serie Telescópica">
-      Serie Telescópica
-    </div>
-    <div class="unit analysis" id="teorema_fundamental_calculo" style="top: 450px; left: 480px;" title="Teorema Fundamental del Cálculo">
-      Teorema Fundamental<br>del Cálculo
-    </div>
-    <div class="unit analysis" id="integracion" style="top: 400px; left: 530px;" title="Integración">
-      Integración
-    </div>
-    <div class="unit analysis" id="derivadas_parciales" style="top: 195px; left: 500px;" title="Derivadas parciales">
-      Derivadas parciales
-    </div>
-    <div class="unit analysis" id="integrales_dobles" style="top: 280px; left: 600px;" title="Integrales dobles">
-      Integrales dobles
-    </div>
-    <div class="unit analysis" id="integrales_triples" style="top: 220px; left: 650px;" title="Integrales triples">
-      Integrales triples
-    </div>
-    <div class="unit analysis" id="integrales_linea" style="top: 270px; left: 700px;" title="Integrales de línea">
-      Integrales de línea
-    </div>
-    <div class="unit analysis" id="derivada_direccional" style="top: 150px; left: 550px;" title="Derivada direccional">
-      Derivada direccional
-    </div>
-    <div class="unit analysis" id="analisis_fourier" style="top: 80px; left: 775px;" title="Análisis de Fourier">
-      Análisis de Fourier
-    </div>
-    <div class="unit analysis" id="funciones_exponenciales_logaritmicas" style="top: 430px; left: 500px;" title="Funciones exponenciales y logarítmicas">
-      Funciones exponenciales<br>y logarítmicas
-    </div>
-    <div class="unit analysis" id="funciones_numericas_var_compleja" style="top: 230px; left: 300px;" title="Funciones numéricas de variable compleja">
-      Funciones numéricas<br>de variable compleja
-    </div>
-
-    <!-- Extras: circles with text -->
-    <div class="unit arithmetic circle dashed-border" id="calc_combinados" style="top: 515px; left: 400px;" title="Cálculos combinados con números reales">
-      Cálculos<br>combinados<br>con números<br>reales
-    </div>
-    <div class="unit arithmetic circle dashed-border" id="operaciones_propiedades" style="top: 670px; left: 430px;" title="Operaciones y propiedades">
-      Operaciones<br>y propiedades
-    </div>
-
-    <!-- START here red text -->
-    <div id="start-here" aria-live="polite" aria-atomic="true" role="alert">Empiece por aquí</div>
-
-    <!-- Arrows container -->
-    <svg id="arrows" aria-hidden="true" focusable="false" >
-      <!-- Arrows are dynamically generated by JS -->
-    </svg>
-
-    <!-- Legend at bottom -->
-    <div id="labels-container" aria-label="Categorías de matemáticas en el mapa">
-      <span class="label analysis">Análisis</span>
-      <span class="label algebra">Álgebra</span>
-      <span class="label geometry">Geometría</span>
-      <span class="label arithmetic">Aritmética</span>
-    </div>
-  </div>
-</div>
-
-<script>
-(() => {
-  /*
-    Model:
-    Each unit has:
-      - id (matching DOM id)
-      - dependencies (array of ids that must be approved prior)
-      - category (for color)
-      - position (already in css top/left)
-  */
-
-  const units = {
-    // ARITMÉTICA
-    "concepto_medir_contar": {
-      deps: [],
-      category: "arithmetic"
-    },
-    "elementos_basicos_geometria": {
-      deps: ["concepto_medir_contar"],
-      category: "arithmetic"
-    },
-    "instrumentos_medicion": {
-      deps: ["concepto_medir_contar"],
-      category: "arithmetic"
-    },
-    "numeros_naturales": {
-      deps: ["concepto_medir_contar"],
-      category: "arithmetic"
-    },
-    "numeros_enteros": {
-      deps: ["numeros_naturales"],
-      category: "arithmetic"
-    },
-    "numeros_racionales": {
-      deps: ["numeros_enteros"],
-      category: "arithmetic"
-    },
-    "numeros_irracionales": {
-      deps: ["numeros_racionales"],
-      category: "arithmetic"
-    },
-    "numeros_complejos": {
-      deps: ["numeros_irracionales"],
-      category: "arithmetic"
-    },
-    "teorema_fundamental_aritmetica": {
-      deps: ["numeros_naturales"],
-      category: "arithmetic"
-    },
-    "numeros_primos": {
-      deps: ["teorema_fundamental_aritmetica"],
-      category: "arithmetic"
-    },
-
-    // GEOMETRÍA
-    "puntos_segmentos_angulos": {
-      deps: ["concepto_medir_contar"],
-      category: "geometry"
-    },
-    "figuras_planas": {
-      deps: ["puntos_segmentos_angulos"],
-      category: "geometry"
-    },
-    "poligonos": {
-      deps: ["figuras_planas"],
-      category: "geometry"
-    },
-    "cuerpos": {
-      deps: ["figuras_planas"],
-      category: "geometry"
-    },
-    "geometria_analitica_espacio": {
-      deps: ["cuerpos"],
-      category: "geometry"
-    },
-    "geometria_analitica_plana": {
-      deps: ["figuras_planas"],
-      category: "geometry"
-    },
-    "curvas": {
-      deps: ["geometria_analitica_espacio"],
-      category: "geometry"
-    },
-    "rectas": {
-      deps: ["geometria_analitica_plana"],
-      category: "geometry"
-    },
-    "conicas": {
-      deps: ["curvas", "rectas"],
-      category: "geometry"
-    },
-    "superficies": {
-      deps: ["conicas", "geometria_analitica_espacio"],
-      category: "geometry"
-    },
-    "matrices": {
-      deps: ["superficies"],
-      category: "geometry"
-    },
-    "trigonometria": {
-      deps: ["puntos_segmentos_angulos", "numeros_reales"],
-      category: "geometry"
-    },
-
-    // ÁLGEBRA
-    "representacion_simbolica": {
-      deps: ["concepto_medir_contar"],
-      category: "algebra"
-    },
-    "expresiones_algebricas": {
-      deps: ["representacion_simbolica"],
-      category: "algebra"
-    },
-    "polinomios": {
-      deps: ["expresiones_algebricas"],
-      category: "algebra"
-    },
-    "ecuaciones": {
-      deps: ["polinomios"],
-      category: "algebra"
-    },
-    "inecuaciones": {
-      deps: ["ecuaciones"],
-      category: "algebra"
-    },
-    "teorema_fundamental_algebra": {
-      deps: ["representacion_simbolica"],
-      category: "algebra"
-    },
-    "sistemas_lineales": {
-      deps: ["representacion_simbolica"],
-      category: "algebra"
-    },
-    "sistemas_no_lineales": {
-      deps: ["sistemas_lineales"],
-      category: "algebra"
-    },
-    "funciones_trigonométricas": {
-      deps: ["trigonometria"],
-      category: "algebra"
-    },
-
-    // ANÁLISIS
-    "funciones_n_var_reales": {
-      deps: ["funciones_n_var_reales_unica"],
-      category: "analysis"
-    },
-    "funciones_n_var_compleja": {
-      deps: ["funciones_vectoriales"],
-      category: "analysis"
-    },
-    "funciones_vectoriales": {
-      deps: ["funciones_parametricas"],
-      category: "analysis"
-    },
-    "derivadas_parametricas": {
-      deps: ["funciones_parametricas"],
-      category: "analysis"
-    },
-    "funciones_parametricas": {
-      deps: ["funciones_vectoriales"],
-      category: "analysis"
-    },
-    "parametrizacion_curvas": {
-      deps: ["funciones_parametricas", "funciones_n_var_reales"],
-      category: "analysis"
-    },
-    "derivacion": {
-      deps: ["funciones_n_var_reales_unica"],
-      category: "analysis"
-    },
-    "limite": {
-      deps: ["funciones_n_var_reales_unica"],
-      category: "analysis"
-    },
-    "funciones_n_var_reales_unica": {
-      deps: ["estudio_funciones_var_real"],
-      category: "analysis"
-    },
-    "limite_varias_variables": {
-      deps: ["funciones_n_var_reales"],
-      category: "analysis"
-    },
-    "estudio_funciones_var_real": {
-      deps: ["limite"],
-      category: "analysis"
-    },
-    "series_de_funciones": {
-      deps: ["estudio_convergencia"],
-      category: "analysis"
-    },
-    "serie_de_taylor": {
-      deps: ["series_de_funciones"],
-      category: "analysis"
-    },
-    "series_numericas": {
-      deps: ["sucesiones_numericas"],
-      category: "analysis"
-    },
-    "sucesiones_numericas": {
-      deps: [],
-      category: "analysis"
-    },
-    "estudio_convergencia": {
-      deps: ["sucesiones_numericas"],
-      category: "analysis"
-    },
-    "serie_geometrica": {
-      deps: ["estudio_convergencia"],
-      category: "analysis"
-    },
-    "serie_telescopica": {
-      deps: ["estudio_convergencia"],
-      category: "analysis"
-    },
-    "teorema_fundamental_calculo": {
-      deps: ["derivacion", "integracion"],
-      category: "analysis"
-    },
-    "integracion": {
-      deps: ["limite"],
-      category: "analysis"
-    },
-    "derivadas_parciales": {
-      deps: ["derivacion"],
-      category: "analysis"
-    },
-    "integrales_dobles": {
-      deps: ["integracion"],
-      category: "analysis"
-    },
-    "integrales_triples": {
-      deps: ["integrales_dobles"],
-      category: "analysis"
-    },
-    "integrales_linea": {
-      deps: ["integracion"],
-      category: "analysis"
-    },
-    "derivada_direccional": {
-      deps: ["derivadas_parciales"],
-      category: "analysis"
-    },
-    "analisis_fourier": {
-      deps: ["parametrizacion_curvas"],
-      category: "analysis"
-    },
-    "funciones_exponenciales_logaritmicas": {
-      deps: ["funciones_n_var_reales_unica"],
-      category: "analysis"
-    }
-  };
-
-  // Adjusted dependencies with critical ones added
-  // Add missing "numeros_reales" id for trigonometria
-  units["numeros_reales"] = {
-    deps: ["numeros_racionales", "numeros_irracionales"],
-    category: "arithmetic"
-  };
-  // Let trigonometria depend on "numeros_reales"
-  if (!units.trigonometria.deps.includes("numeros_reales")) {
-    units.trigonometria.deps.push("numeros_reales");
-  }
-
-  // Helper function to get approval status from localStorage
-  function getApprovedUnits() {
-    try {
-      const saved = localStorage.getItem('malla_aprobadas');
-      if (!saved) return new Set();
-      return new Set(JSON.parse(saved));
-    } catch {
-      return new Set();
-    }
-  }
-
-  // Save approval set to localStorage
-  function saveApprovedUnits(approvedSet) {
-    localStorage.setItem('malla_aprobadas', JSON.stringify([...approvedSet]));
-  }
-
-  // Check if all dependencies of a unit are approved
-  function dependenciesApproved(unitId, approvedSet) {
-    const deps = units[unitId].deps || [];
-    return deps.every(d => approvedSet.has(d));
-  }
-
-  // Build an array of arrows (edges) connecting from -> to
-  // We draw arrows from each dependency to this unit
-  const arrowsData = [];
-  for (const [unitId, unitData] of Object.entries(units)) {
-    (unitData.deps || []).forEach(dep => {
-      if (units[dep]) {
-        arrowsData.push({from: dep, to: unitId});
-      }
-    });
-  }
-
-  // Get element coordinates center for arrow drawing
-  function getUnitCenter(el) {
-    const rect = el.getBoundingClientRect();
-    const parentRect = el.parentElement.getBoundingClientRect();
-    // Relative to parent (#map)
-    const cx = rect.left - parentRect.left + rect.width/2;
-    const cy = rect.top - parentRect.top + rect.height/2;
-    return {x: cx, y: cy};
-  }
-
-  // Draw line with arrowhead svg
-  function drawArrows() {
-    const svg = document.getElementById('arrows');
-    svg.innerHTML = '';
-
-    // Create marker for arrowhead once
-    const ns = "http://www.w3.org/2000/svg";
-    const defs = document.createElementNS(ns, 'defs');
-    const marker = document.createElementNS(ns, 'marker');
-    marker.setAttribute('id', 'arrowhead');
-    marker.setAttribute('markerWidth', '10');
-    marker.setAttribute('markerHeight', '7');
-    marker.setAttribute('refX', '10');
-    marker.setAttribute('refY', '3.5');
-    marker.setAttribute('orient', 'auto');
-    marker.setAttribute('fill', 'var(--arrow-color)');
-    const arrowPath = document.createElementNS(ns, 'path');
-    arrowPath.setAttribute('d', 'M0,0 L10,3.5 L0,7 Z');
-    marker.appendChild(arrowPath);
-    defs.appendChild(marker);
-    svg.appendChild(defs);
-
-    // Draw arrows
-    arrowsData.forEach(({from, to}) => {
-      const fromEl = document.getElementById(from);
-      const toEl = document.getElementById(to);
-      if (!fromEl || !toEl) return;
-
-      const start = getUnitCenter(fromEl);
-      const end = getUnitCenter(toEl);
-
-      // Calculate a simple straight line with some offset from rectangles
-      // We'll offset start and end from center depending on angle
-
-      // Vector from start to end
-      const dx = end.x - start.x;
-      const dy = end.y - start.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 1) return;
-      // Unit vector
-      const ux = dx / dist;
-      const uy = dy / dist;
-
-      // Offset radius for start and end to avoid overlap with boxes
-      // Approximate radius by half diagonal of the box (roughly 50)
-      const offset = 42; // px offset from center to edge
-
-      const sx = start.x + ux * offset;
-      const sy = start.y + uy * offset;
-      const ex = end.x - ux * offset;
-      const ey = end.y - uy * offset;
-
-      const line = document.createElementNS(ns, 'line');
-      line.setAttribute('x1', sx);
-      line.setAttribute('y1', sy);
-      line.setAttribute('x2', ex);
-      line.setAttribute('y2', ey);
-      line.setAttribute('stroke', 'var(--arrow-color)');
-      line.setAttribute('stroke-width', '2');
-      line.setAttribute('marker-end', 'url(#arrowhead)');
-      svg.appendChild(line);
-    });
-  }
-
-  // Update UI according to approved and blocked
-  function updateUI() {
-    const approved = getApprovedUnits();
-
-    for (const unitId in units) {
-      const el = document.getElementById(unitId);
-      if (!el) continue;
-
-      if (approved.has(unitId)) {
-        el.classList.add('approved');
-        el.classList.remove('blocked');
-        el.setAttribute('aria-pressed', 'true');
-        el.removeAttribute('data-tooltip');
-        el.removeAttribute('tabindex');
-        el.style.pointerEvents = "auto";
-        continue;
-      }
-
-      // Check dependencies approved
-      if (dependenciesApproved(unitId, approved)) {
-        // Unlocked, not approved
-        el.classList.remove('approved');
-        el.classList.remove('blocked');
-        el.setAttribute('aria-pressed', 'false');
-        el.setAttribute('tabindex', '0');
-        el.style.pointerEvents = "auto";
-        el.removeAttribute('data-tooltip');
-      } else {
-        // Blocked
-        el.classList.remove('approved');
-        el.classList.add('blocked');
-        el.setAttribute('aria-pressed', 'false');
-        el.removeAttribute('tabindex');
-        el.style.pointerEvents = "none";
-        el.setAttribute('data-tooltip', 'Debe aprobar unidades previas');
-      }
-    }
-  }
-
-  // Initialization: attach click handlers
-  window.addEventListener('load', () => {
-    updateUI();
-    drawArrows();
-
-    // Handle click on units
-    for (const unitId in units) {
-      const el = document.getElementById(unitId);
-      if (!el) continue;
-      el.addEventListener('click', () => {
-        // If blocked, ignore click
-        if (el.classList.contains('blocked')) return;
-
-        // Toggle approved
-        const approved = getApprovedUnits();
-
-        if (approved.has(unitId)) {
-          // Unapprove
-          approved.delete(unitId);
-          // On unapprove also unapprove dependents recursively
-          function unapproveDependents(id) {
-            for (const [key, data] of Object.entries(units)) {
-              if (data.deps.includes(id) && approved.has(key)) {
-                approved.delete(key);
-                unapproveDependents(key);
-              }
+    <script>
+        // Definición de materias y sus dependencias
+        const subjects = {
+            // Fundamentos
+            'numeros-complejos': {
+                name: 'Números Complejos',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: [],
+                prerequisites: []
+            },
+            'teorema-fundamental-aritmetica': {
+                name: 'Teorema Fundamental de la Aritmética',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: ['numeros-primos'],
+                prerequisites: []
+            },
+            'numeros-primos': {
+                name: 'Números Primos',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: ['numeros-racionales'],
+                prerequisites: []
+            },
+            'numeros-racionales': {
+                name: 'Números Racionales',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: ['numeros-irracionales'],
+                prerequisites: []
+            },
+            'numeros-irracionales': {
+                name: 'Números Irracionales',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: ['numeros-reales'],
+                prerequisites: []
+            },
+            'numeros-reales': {
+                name: 'Números Reales',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: ['induccion-matematica'],
+                prerequisites: []
+            },
+            'induccion-matematica': {
+                name: 'Inducción Matemática',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: ['calculo-combinatorio'],
+                prerequisites: []
+            },
+            'calculo-combinatorio': {
+                name: 'Cálculo Combinatorio',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: ['representacion-simbolica'],
+                prerequisites: []
+            },
+            'representacion-simbolica': {
+                name: 'Representación Simbólica',
+                area: 'Aritmética',
+                areaClass: 'area-aritmetica',
+                dependencies: ['numeros-complejos'],
+                prerequisites: []
+            },
+            
+            // Álgebra
+            'concepto-funcion': {
+                name: 'Concepto de Función',
+                area: 'Álgebra',
+                areaClass: 'area-algebra',
+                dependencies: ['numeros-reales'],
+                prerequisites: []
+            },
+            'polinomios': {
+                name: 'Polinomios',
+                area: 'Álgebra',
+                areaClass: 'area-algebra',
+                dependencies: ['concepto-funcion'],
+                prerequisites: []
+            },
+            'instrumentos-trigonometria': {
+                name: 'Instrumentos de Trigonometría',
+                area: 'Álgebra',
+                areaClass: 'area-algebra',
+                dependencies: ['polinomios'],
+                prerequisites: []
+            },
+            'construccion-propiedades': {
+                name: 'Construcción y Propiedades',
+                area: 'Álgebra',
+                areaClass: 'area-algebra',
+                dependencies: ['instrumentos-trigonometria'],
+                prerequisites: []
+            },
+            'puntos-extremos': {
+                name: 'Puntos Extremos y Singularidades',
+                area: 'Álgebra',
+                areaClass: 'area-algebra',
+                dependencies: ['construccion-propiedades'],
+                prerequisites: []
+            },
+            'elementos-basicos': {
+                name: 'Elementos Básicos de Geometría',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['puntos-extremos'],
+                prerequisites: []
+            },
+            'figuras-basicas': {
+                name: 'Figuras Básicas',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['elementos-basicos'],
+                prerequisites: []
+            },
+            'conicas': {
+                name: 'Cónicas',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['figuras-basicas'],
+                prerequisites: []
+            },
+            'superficies': {
+                name: 'Superficies',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['conicas'],
+                prerequisites: []
+            },
+            'curvas': {
+                name: 'Curvas',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['superficies'],
+                prerequisites: []
+            },
+            'geometria-analitica': {
+                name: 'Geometría Analítica en R²',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['curvas'],
+                prerequisites: []
+            },
+            'trigonometria': {
+                name: 'Trigonometría',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['geometria-analitica'],
+                prerequisites: []
+            },
+            'matrices': {
+                name: 'Matrices',
+                area: 'Álgebra',
+                areaClass: 'area-algebra',
+                dependencies: ['concepto-funcion'],
+                prerequisites: []
+            },
+            'ciencias': {
+                name: 'Ciencias',
+                area: 'Álgebra',
+                areaClass: 'area-algebra',
+                dependencies: ['matrices'],
+                prerequisites: []
+            },
+            'rectas': {
+                name: 'Rectas',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['ciencias'],
+                prerequisites: []
+            },
+            'geometria-solidos': {
+                name: 'Geometría de Sólidos - Sólidos Platónicos',
+                area: 'Geometría',
+                areaClass: 'area-geometria',
+                dependencies: ['rectas'],
+                prerequisites: []
+            },
+            'funciones-especiales': {
+                name: 'Funciones Especiales',
+                area: 'Álgebra',
+                areaClass: 'area-algebra',
+                dependencies: ['geometria-solidos'],
+                prerequisites: []
+            },
+            
+            // Análisis
+            'ecuaciones-diferenciales': {
+                name: 'Ecuaciones Diferenciales',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: [],
+                prerequisites: []
+            },
+            'funciones-parametricas': {
+                name: 'Funciones Paramétricas',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['ecuaciones-diferenciales'],
+                prerequisites: []
+            },
+            'variable-compleja': {
+                name: 'Variable Compleja',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['funciones-parametricas'],
+                prerequisites: []
+            },
+            'limite-derivada': {
+                name: 'Límite en Varias Variables',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['variable-compleja'],
+                prerequisites: []
+            },
+            'funciones-superiores': {
+                name: 'Funciones Superiores Límite de Una Variable',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['limite-derivada'],
+                prerequisites: []
+            },
+            'calculo-una-variable': {
+                name: 'Cálculo de una Variable',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['funciones-superiores'],
+                prerequisites: []
+            },
+            'derivacion': {
+                name: 'Derivación',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['calculo-una-variable'],
+                prerequisites: []
+            },
+            'teorema-valor-medio': {
+                name: 'Teorema del Valor Medio',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['derivacion'],
+                prerequisites: []
+            },
+            'integracion': {
+                name: 'Integración',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['teorema-valor-medio'],
+                prerequisites: []
+            },
+            'derivadas-parciales': {
+                name: 'Derivadas Parciales',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['integracion'],
+                prerequisites: []
+            },
+            'integrales-triples': {
+                name: 'Integrales Triples',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['derivadas-parciales'],
+                prerequisites: []
+            },
+            'series-infinitas': {
+                name: 'Series Infinitas',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['integrales-triples'],
+                prerequisites: []
+            },
+            'series-taylor': {
+                name: 'Series de Taylor',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['series-infinitas'],
+                prerequisites: []
+            },
+            'series-fourier': {
+                name: 'Series de Fourier',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['series-taylor'],
+                prerequisites: []
+            },
+            'convergencia': {
+                name: 'Convergencia',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['series-fourier'],
+                prerequisites: []
+            },
+            'salto-convergencia': {
+                name: 'Salto de Convergencia',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['convergencia'],
+                prerequisites: []
+            },
+            'series-numericas': {
+                name: 'Series Numéricas',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['salto-convergencia'],
+                prerequisites: []
+            },
+            'sucesiones-numericas': {
+                name: 'Sucesiones Numéricas',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['series-numericas'],
+                prerequisites: []
+            },
+            'limite': {
+                name: 'Límite',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['sucesiones-numericas'],
+                prerequisites: []
+            },
+            'continuidad': {
+                name: 'Continuidad',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['limite'],
+                prerequisites: []
+            },
+            'teorema-calculo': {
+                name: 'Teorema del Cálculo',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['continuidad'],
+                prerequisites: []
+            },
+            'sistema-ecuaciones': {
+                name: 'Sistema de Ecuaciones 2D Físicas',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['teorema-calculo'],
+                prerequisites: []
+            },
+            'sistema-ecuaciones-lineales': {
+                name: 'Sistema de Ecuaciones Lineales',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['sistema-ecuaciones'],
+                prerequisites: []
+            },
+            'transformacion-curvas': {
+                name: 'Transformación de Curvas y Superficies',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['sistema-ecuaciones-lineales'],
+                prerequisites: []
+            },
+            'analisis-fourier': {
+                name: 'Análisis de Fourier',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['transformacion-curvas'],
+                prerequisites: []
+            },
+            'representacion-grafica': {
+                name: 'Representación Gráfica',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['analisis-fourier'],
+                prerequisites: []
+            },
+            'limites': {
+                name: 'Límites',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['representacion-grafica'],
+                prerequisites: []
+            },
+            'funciones-numericas': {
+                name: 'Funciones Numéricas de una Variable',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['limites'],
+                prerequisites: []
+            },
+            'estudio-parametrico': {
+                name: 'Estudio Paramétrico de una Curva',
+                area: 'Análisis',
+                areaClass: 'area-analisis',
+                dependencies: ['funciones-numericas'],
+                prerequisites: []
             }
-          }
-          unapproveDependents(unitId);
-        } else {
-          // Approve only if dependencies approved
-          if (dependenciesApproved(unitId, approved)) {
-            approved.add(unitId);
-          }
-        }
-        saveApprovedUnits(approved);
-        updateUI();
-      });
+        };
 
-      // Keyboard accessibility (Enter key toggles)
-      el.addEventListener('keydown', (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          el.click();
-        }
-      });
-    }
-  });
+        // Estado del progreso
+        let progress = {};
 
-  // Responsive redraw arrows on resize or scroll
-  window.addEventListener('resize', () => {
-    drawArrows();
-  });
-})();
-</script>
+        // Inicializar aplicación
+        function init() {
+            loadProgress();
+            renderSubjects();
+            updateProgress();
+        }
+
+        // Cargar progreso del localStorage
+        function loadProgress() {
+            const saved = localStorage.getItem('mathProgress');
+            if (saved) {
+                progress = JSON.parse(saved);
+            }
+        }
+
+        // Guardar progreso en localStorage
+        function saveProgress() {
+            localStorage.setItem('mathProgress', JSON.stringify(progress));
+        }
+
+        // Verificar si una materia está disponible
+        function isSubjectAvailable(subjectId) {
+            const subject = subjects[subjectId];
+            if (!subject.dependencies || subject.dependencies.length === 0) {
+                return true;
+            }
+            return subject.dependencies.every(dep => progress[dep] === true);
+        }
+
+        // Obtener estado de una materia
+        function getSubjectStatus(subjectId) {
+            if (progress[subjectId]) {
+                return 'completed';
+            }
+            if (isSubjectAvailable(subjectId)) {
+                return 'available';
+            }
+            return 'blocked';
+        }
+
+        // Obtener materias faltantes
+        function getMissingDependencies(subjectId) {
+            const subject = subjects[subjectId];
+            if (!subject.dependencies) return [];
+            
+            return subject.dependencies.filter(dep => !progress[dep])
+                .map(dep => subjects[dep].name);
+        }
+
+        // Manejar click en materia
+        function handleSubjectClick(subjectId) {
+            const status = getSubjectStatus(subjectId);
+            
+            if (status === 'available') {
+                progress[subjectId] = true;
+                saveProgress();
+                renderSubjects();
+                updateProgress();
+            } else if (status === 'completed') {
+                progress[subjectId] = false;
+                saveProgress();
+                renderSubjects();
+                updateProgress();
+            }
+        }
+
+        // Renderizar materias
+        function renderSubjects() {
+            const grid = document.getElementById('curriculumGrid');
+            grid.innerHTML = '';
+
+            Object.keys(subjects).forEach(subjectId => {
+                const subject = subjects[subjectId];
+                const status = getSubjectStatus(subjectId);
+                
+                const card = document.createElement('div');
+                card.className = `subject-card ${status} ${subject.areaClass}`;
+                card.onclick = () => handleSubjectClick(subjectId);
+                
+                // Manejo de tooltip para materias bloqueadas
+                if (status === 'blocked') {
+                    card.onmouseenter = (e) => showTooltip(e, subjectId);
+                    card.onmouseleave = hideTooltip;
+                }
+                
+                const statusText = {
+                    'available': 'Disponible',
+                    'completed': '✓ Completada',
+                    'blocked': '🔒 Bloqueada'
+                };
+                
+                const statusClass = {
+                    'available': 'status-available',
+                    'completed': 'status-completed',
+                    'blocked': 'status-blocked'
+                };
+                
+                card.innerHTML = `
+                    <div class="subject-name">${subject.name}</div>
+                    <div class="subject-area">${subject.area}</div>
+                    <div class="subject-status ${statusClass[status]}">
+                        ${statusText[status]}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Mostrar tooltip
+        function showTooltip(event, subjectId) {
+            const missing = getMissingDependencies(subjectId);
+            const tooltip = document.getElementById('tooltip');
+            
+            if (missing.length > 0) {
+                tooltip.innerHTML = `Requiere completar: ${missing.join(', ')}`;
+                tooltip.style.opacity = '1';
+                tooltip.style.left = event.pageX + 10 + 'px';
+                tooltip.style.top = event.pageY - 10 + 'px';
+            }
+        }
+
+        // Ocultar tooltip
+        function hideTooltip() {
+            document.getElementById('tooltip').style.opacity = '0';
+        }
+
+        // Actualizar barra de progreso
+        function updateProgress() {
+            const total = Object.keys(subjects).length;
+            const completed = Object.values(progress).filter(Boolean).length;
+            const percentage = Math.round((completed / total) * 100);
+            
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `${percentage}% completado (${completed}/${total} materias)`;
+        }
+
+        // Reiniciar progreso
+        function resetProgress() {
+            if (confirm('¿Estás seguro de que quieres reiniciar todo el progreso?')) {
+                progress = {};
+                saveProgress();
+                renderSubjects();
+                updateProgress();
+            }
+        }
+
+        // Inicializar cuando la página cargue
+        window.onload = init;
+    </script>
 </body>
 </html>
-
