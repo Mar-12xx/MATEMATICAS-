@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malla Matemática Ingeniería</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --text: #2f3640;
+      --card-bg: #ffffff;
+      --border: #ccc;
+      --aritmetica: #4a69bd;
+      --algebra: #82ccdd;
+      --geometria: #78e08f;
+      --analisis: #f8a5c2;
+      --approved: #58b368;
+      --locked: #d6d6d6;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      margin: 0;
+      padding: 2rem;
+      color: var(--text);
+    }
+    h1 {
+      text-align: center;
+      color: var(--aritmetica);
+      margin-bottom: 1rem;
+    }
+    .controls {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .controls button {
+      padding: 0.5rem 1rem;
+      margin: 0.3rem;
+      border: none;
+      background: var(--aritmetica);
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .unit {
+      position: relative;
+      padding: 1rem;
+      border-radius: 10px;
+      background-color: var(--card-bg);
+      border: 2px solid var(--border);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 180px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1;
+    }
+    .unit.aritmetica { border-color: var(--aritmetica); }
+    .unit.algebra { border-color: var(--algebra); }
+    .unit.geometria { border-color: var(--geometria); }
+    .unit.analisis { border-color: var(--analisis); }
+
+    .unit:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    .unit.approved {
+      background-color: var(--approved);
+      color: white;
+      border-color: #3b9448;
+    }
+    .unit.locked {
+      background-color: var(--locked);
+      color: #666;
+      cursor: not-allowed;
+    }
+    .unit.locked:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    .unit.locked::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: -1.7rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: #fff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      display: none;
+      z-index: 10;
+    }
+    .unit.locked:hover::after {
+      display: block;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Curricular Matemática</h1>
+  <div class="controls">
+    <button onclick="resetProgress()">🔁 Resetear progreso</button>
+    <button onclick="exportProgress()">💾 Exportar progreso</button>
+  </div>
+  <div class="grid" id="units"></div>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const data = [
+      // Aritmética
+      { id: 'sistemaDecimal', label: 'Sistema de numeración decimal', deps: [], group: 'aritmetica' },
+      { id: 'naturales', label: 'Números naturales', deps: ['sistemaDecimal'], group: 'aritmetica' },
+      { id: 'enteros', label: 'Números enteros', deps: ['naturales'], group: 'aritmetica' },
+      { id: 'fracciones', label: 'Fracciones', deps: ['naturales'], group: 'aritmetica' },
+      { id: 'decimales', label: 'Números decimales', deps: ['naturales'], group: 'aritmetica' },
+      { id: 'primos', label: 'Números primos', deps: ['naturales'], group: 'aritmetica' },
+      { id: 'operaciones', label: 'Operaciones combinadas', deps: ['enteros', 'fracciones', 'decimales'], group: 'aritmetica' },
+      { id: 'representacion', label: 'Representación', deps: ['operaciones'], group: 'algebra' },
+
+      // Álgebra
+      { id: 'expresiones', label: 'Expresiones algebraicas', deps: ['representacion'], group: 'algebra' },
+      { id: 'polinomios', label: 'Polinomios', deps: ['expresiones'], group: 'algebra' },
+      { id: 'ecuaciones', label: 'Ecuaciones', deps: ['polinomios'], group: 'algebra' },
+      { id: 'sistemas', label: 'Sistemas de ecuaciones', deps: ['ecuaciones'], group: 'algebra' },
+
+      // Geometría
+      { id: 'rectas', label: 'Rectas', deps: ['representacion'], group: 'geometria' },
+      { id: 'angulos', label: 'Ángulos', deps: ['rectas'], group: 'geometria' },
+      { id: 'figuras', label: 'Figuras planas', deps: ['angulos'], group: 'geometria' },
+      { id: 'trigonometria', label: 'Trigonometría', deps: ['figuras'], group: 'geometria' },
+
+      // Análisis
+      { id: 'limite', label: 'Límite', deps: ['ecuaciones'], group: 'analisis' },
+      { id: 'derivada', label: 'Derivada', deps: ['limite'], group: 'analisis' },
+      { id: 'integral', label: 'Integral', deps: ['derivada'], group: 'analisis' }
+    ];
+
+    const container = document.getElementById('units');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function saveProgress(id, state) {
+      const progress = JSON.parse(localStorage.getItem('progress')) || {};
+      progress[id] = state;
+      localStorage.setItem('progress', JSON.stringify(progress));
+    }
+
+    function loadProgress() {
+      return JSON.parse(localStorage.getItem('progress')) || {};
+    }
+
+    function resetProgress() {
+      if (confirm("¿Seguro que querés reiniciar tu progreso?")) {
+        localStorage.removeItem('progress');
+        createUnits();
+        drawArrows();
+      }
+    }
+
+    function exportProgress() {
+      const progress = localStorage.getItem('progress');
+      const blob = new Blob([progress], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'progreso_matematica.json';
+      a.click();
+    }
+
+    function drawArrows() {
+      canvas.width = document.body.scrollWidth;
+      canvas.height = document.body.scrollHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      data.forEach(unit => {
+        const fromEl = document.getElementById(unit.id);
+        unit.deps.forEach(dep => {
+          const toEl = document.getElementById(dep);
+          if (fromEl && toEl) {
+            const fromRect = fromEl.getBoundingClientRect();
+            const toRect = toEl.getBoundingClientRect();
+            const x1 = toRect.left + toRect.width / 2 + window.scrollX;
+            const y1 = toRect.bottom + window.scrollY;
+            const x2 = fromRect.left + fromRect.width / 2 + window.scrollX;
+            const y2 = fromRect.top + window.scrollY;
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - 5, y2 - 10);
+            ctx.lineTo(x2 + 5, y2 - 10);
+            ctx.closePath();
+            ctx.fillStyle = '#888';
+            ctx.fill();
+          }
+        });
+      });
+    }
+
+    function createUnits() {
+      const progress = loadProgress();
+      container.innerHTML = '';
+      data.forEach(unit => {
+        const el = document.createElement('div');
+        el.className = `unit ${unit.group}`;
+        el.id = unit.id;
+        el.textContent = unit.label;
+
+        const depsApproved = unit.deps.every(dep => progress[dep]);
+        const isApproved = progress[unit.id];
+
+        if (!depsApproved && !isApproved) {
+          el.classList.add('locked');
+          const missing = unit.deps.filter(dep => !progress[dep]).map(d => data.find(u => u.id === d).label).join(', ');
+          el.setAttribute('data-tooltip', `Falta: ${missing}`);
+        } else {
+          el.addEventListener('click', () => {
+            const currentState = el.classList.contains('approved');
+            el.classList.toggle('approved');
+            saveProgress(unit.id, !currentState);
+            createUnits();
+            drawArrows();
+          });
+        }
+
+        if (isApproved) el.classList.add('approved');
+        container.appendChild(el);
+      });
+    }
+
+    window.addEventListener('load', () => {
+      createUnits();
+      setTimeout(drawArrows, 100);
+    });
+    window.addEventListener('resize', drawArrows);
+  </script>
+</body>
+</html>
