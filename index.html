@@ -3,786 +3,595 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Malla Curricular - Matemática para Ingeniería</title>
+    <title>Malla Curricular de Ingeniería</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* Custom styles to override or enhance Tailwind */
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 20px;
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 30px;
-            font-size: 1.2em;
-        }
-
-        .curriculum-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+        .curriculum-wrapper {
             position: relative;
+            width: 100%;
+            max-width: 1200px; /* Max width for the entire map */
+            min-height: 1500px; /* Adjust based on content height */
+            margin-top: 20px;
+            margin-bottom: 50px;
         }
 
-        .subject-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+        .unit {
+            position: absolute;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            border: 3px solid transparent;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.9rem;
+            line-height: 1.2;
+            width: 120px; /* Fixed width for units */
+            height: 60px; /* Fixed height for units */
+            z-index: 10; /* Ensure units are above SVG lines */
         }
 
-        .subject-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        .unit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .subject-card.available {
-            border-color: #3498db;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        .unit.approved {
+            background-color: #d1fae5; /* Green-100 */
+            border-color: #34d399; /* Green-400 */
+            color: #065f46; /* Green-800 */
         }
 
-        .subject-card.available:hover {
-            border-color: #2980b9;
-        }
-
-        .subject-card.completed {
-            border-color: #27ae60;
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        }
-
-        .subject-card.blocked {
-            border-color: #e74c3c;
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-            opacity: 0.6;
+        .unit.locked {
+            background-color: #f3f4f6; /* Gray-100 */
+            border-color: #cbd5e1; /* Gray-300 */
+            color: #6b7280; /* Gray-500 */
             cursor: not-allowed;
         }
 
-        .subject-name {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            text-align: center;
+        .unit-title {
+            font-weight: 600; /* semibold */
+            margin-bottom: 0.25rem;
         }
 
-        .subject-area {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            text-align: center;
-            margin-bottom: 15px;
-            font-style: italic;
+        .unit-status {
+            font-size: 0.8rem;
+            color: #9ca3af; /* Gray-400 */
         }
 
-        .subject-status {
-            text-align: center;
-            font-size: 0.9em;
-            font-weight: bold;
-            padding: 8px 12px;
-            border-radius: 20px;
-            margin-top: 10px;
+        .unit.approved .unit-status {
+            color: #065f46; /* Green-800 */
         }
 
-        .status-available {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .status-completed {
-            background: #e8f5e8;
-            color: #388e3c;
-        }
-
-        .status-blocked {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #27ae60, #2ecc71);
-            transition: width 0.3s ease;
-            border-radius: 4px;
-        }
-
-        .progress-text {
-            text-align: center;
-            color: #2c3e50;
-            font-weight: bold;
-            margin-top: 10px;
+        .unit.locked .unit-status {
+            color: #9ca3af; /* Gray-400 */
         }
 
         .tooltip {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.3rem 0.6rem;
             position: absolute;
-            background: #2c3e50;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.9em;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            max-width: 200px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-
-        .tooltip:after {
-            content: '';
-            position: absolute;
-            top: 100%;
+            z-index: 20; /* Above units */
+            bottom: 110%; /* Position above the unit */
             left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #2c3e50 transparent transparent transparent;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            white-space: nowrap;
+            font-size: 0.75rem;
         }
 
-        .reset-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
+        .unit.locked:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .clear-progress-btn {
+            @apply bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-300;
+        }
+
+        /* SVG styles for arrows */
+        .arrow-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allow clicks to pass through to units */
+            z-index: 5; /* Below units */
+        }
+
+        .arrow-line {
+            stroke: #6b7280; /* Gray-500 */
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead); /* Use defined arrowhead */
+        }
+
+        .arrow-line.approved-path {
+            stroke: #10b981; /* Green-500 for approved paths */
+        }
+
+        /* Styles for sections (Análisis, Álgebra, Geometría, Aritmética) */
+        .section-label {
+            position: absolute;
+            font-size: 1.5rem;
             font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            color: #2c3e50;
+            z-index: 15; /* Above units and arrows */
+            background-color: #f0f2f5; /* Match body background */
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
         }
 
-        .reset-btn:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
+        /* Specific positioning for section labels based on the map */
+        #analisis-label { top: 10%; left: 30%; color: #ef4444; /* Red */ }
+        #algebra-label { top: 50%; left: 55%; color: #3b82f6; /* Blue */ }
+        #geometria-label { top: 65%; left: 75%; color: #22c55e; /* Green */ }
+        #aritmetica-label { top: 75%; left: 20%; color: #6b7280; /* Gray */ }
 
-        .area-analisis { border-left: 5px solid #ff6b6b; }
-        .area-algebra { border-left: 5px solid #4ecdc4; }
-        .area-geometria { border-left: 5px solid #45b7d1; }
-        .area-aritmetica { border-left: 5px solid #f9ca24; }
-
+        /* Responsive adjustments */
         @media (max-width: 768px) {
-            .curriculum-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
+            .unit {
+                width: 100px;
+                height: 50px;
+                font-size: 0.8rem;
+                padding: 0.5rem 0.75rem;
             }
-            
-            h1 {
-                font-size: 2em;
+            .unit-title {
+                font-size: 0.9rem;
             }
-            
-            .container {
-                padding: 20px;
+            .unit-status {
+                font-size: 0.7rem;
+            }
+            .section-label {
+                font-size: 1.2rem;
+            }
+            .curriculum-wrapper {
+                min-height: 2000px; /* Increase height for smaller screens */
+            }
+        }
+
+        /* Modal Styles */
+        #llmModalOverlay {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        #llmModalContent {
+            animation: fadeInScale 0.3s ease-out;
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
             }
         }
     </style>
 </head>
 <body>
-    <button class="reset-btn" onclick="resetProgress()">🔄 Reiniciar Progreso</button>
-    
-    <div class="container">
-        <h1>GUÍA PROPUESTA PARA ESTUDIAR TEMAS DE MATEMÁTICA</h1>
-        <p class="subtitle">PARA CARRERAS DE INGENIERÍA</p>
-        
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="progress-text" id="progressText">0% completado</div>
-        
-        <div class="curriculum-grid" id="curriculumGrid">
-            <!-- Las materias se generarán dinámicamente -->
+    <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Guía Propuesta para Estudiar Temas de Matemática para Carreras de Ingeniería</h1>
+    <div class="flex flex-wrap justify-center gap-4 mb-6">
+        <button id="clearProgressBtn" class="clear-progress-btn">Borrar Progreso</button>
+        <button id="suggestNextStepsBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+            ✨ Sugerir Siguientes Pasos
+        </button>
+    </div>
+
+
+    <div id="curriculumWrapper" class="curriculum-wrapper">
+        <!-- SVG for drawing arrows -->
+        <svg class="arrow-svg" id="arrowSvg">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280" />
+                </marker>
+                <marker id="arrowhead-approved" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#10b981" />
+                </marker>
+            </defs>
+            <!-- Arrows will be drawn here by JavaScript -->
+        </svg>
+
+        <!-- Section Labels -->
+        <div id="analisis-label" class="section-label">ANÁLISIS</div>
+        <div id="algebra-label" class="section-label">ÁLGEBRA</div>
+        <div id="geometria-label" class="section-label">GEOMETRÍA</div>
+        <div id="aritmetica-label" class="section-label">ARITMÉTICA</div>
+
+        <!-- Units will be injected here by JavaScript -->
+    </div>
+
+    <!-- LLM Modal Structure -->
+    <div id="llmModalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div id="llmModalContent" class="bg-white p-6 rounded-lg shadow-xl max-w-lg w-11/12 max-h-[80vh] overflow-y-auto relative">
+            <h3 class="text-xl font-bold mb-4"></h3>
+            <div id="llmModalBody" class="text-gray-700 mb-4"></div>
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl" onclick="closeModal()">
+                &times;
+            </button>
         </div>
     </div>
 
-    <div class="tooltip" id="tooltip"></div>
-
     <script>
-        // Definición de materias y sus dependencias
-        const subjects = {
-            // Fundamentos
-            'numeros-complejos': {
-                name: 'Números Complejos',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: [],
-                prerequisites: []
-            },
-            'teorema-fundamental-aritmetica': {
-                name: 'Teorema Fundamental de la Aritmética',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: ['numeros-primos'],
-                prerequisites: []
-            },
-            'numeros-primos': {
-                name: 'Números Primos',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: ['numeros-racionales'],
-                prerequisites: []
-            },
-            'numeros-racionales': {
-                name: 'Números Racionales',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: ['numeros-irracionales'],
-                prerequisites: []
-            },
-            'numeros-irracionales': {
-                name: 'Números Irracionales',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: ['numeros-reales'],
-                prerequisites: []
-            },
-            'numeros-reales': {
-                name: 'Números Reales',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: ['induccion-matematica'],
-                prerequisites: []
-            },
-            'induccion-matematica': {
-                name: 'Inducción Matemática',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: ['calculo-combinatorio'],
-                prerequisites: []
-            },
-            'calculo-combinatorio': {
-                name: 'Cálculo Combinatorio',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: ['representacion-simbolica'],
-                prerequisites: []
-            },
-            'representacion-simbolica': {
-                name: 'Representación Simbólica',
-                area: 'Aritmética',
-                areaClass: 'area-aritmetica',
-                dependencies: ['numeros-complejos'],
-                prerequisites: []
-            },
-            
-            // Álgebra
-            'concepto-funcion': {
-                name: 'Concepto de Función',
-                area: 'Álgebra',
-                areaClass: 'area-algebra',
-                dependencies: ['numeros-reales'],
-                prerequisites: []
-            },
-            'polinomios': {
-                name: 'Polinomios',
-                area: 'Álgebra',
-                areaClass: 'area-algebra',
-                dependencies: ['concepto-funcion'],
-                prerequisites: []
-            },
-            'instrumentos-trigonometria': {
-                name: 'Instrumentos de Trigonometría',
-                area: 'Álgebra',
-                areaClass: 'area-algebra',
-                dependencies: ['polinomios'],
-                prerequisites: []
-            },
-            'construccion-propiedades': {
-                name: 'Construcción y Propiedades',
-                area: 'Álgebra',
-                areaClass: 'area-algebra',
-                dependencies: ['instrumentos-trigonometria'],
-                prerequisites: []
-            },
-            'puntos-extremos': {
-                name: 'Puntos Extremos y Singularidades',
-                area: 'Álgebra',
-                areaClass: 'area-algebra',
-                dependencies: ['construccion-propiedades'],
-                prerequisites: []
-            },
-            'elementos-basicos': {
-                name: 'Elementos Básicos de Geometría',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['puntos-extremos'],
-                prerequisites: []
-            },
-            'figuras-basicas': {
-                name: 'Figuras Básicas',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['elementos-basicos'],
-                prerequisites: []
-            },
-            'conicas': {
-                name: 'Cónicas',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['figuras-basicas'],
-                prerequisites: []
-            },
-            'superficies': {
-                name: 'Superficies',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['conicas'],
-                prerequisites: []
-            },
-            'curvas': {
-                name: 'Curvas',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['superficies'],
-                prerequisites: []
-            },
-            'geometria-analitica': {
-                name: 'Geometría Analítica en R²',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['curvas'],
-                prerequisites: []
-            },
-            'trigonometria': {
-                name: 'Trigonometría',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['geometria-analitica'],
-                prerequisites: []
-            },
-            'matrices': {
-                name: 'Matrices',
-                area: 'Álgebra',
-                areaClass: 'area-algebra',
-                dependencies: ['concepto-funcion'],
-                prerequisites: []
-            },
-            'ciencias': {
-                name: 'Ciencias',
-                area: 'Álgebra',
-                areaClass: 'area-algebra',
-                dependencies: ['matrices'],
-                prerequisites: []
-            },
-            'rectas': {
-                name: 'Rectas',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['ciencias'],
-                prerequisites: []
-            },
-            'geometria-solidos': {
-                name: 'Geometría de Sólidos - Sólidos Platónicos',
-                area: 'Geometría',
-                areaClass: 'area-geometria',
-                dependencies: ['rectas'],
-                prerequisites: []
-            },
-            'funciones-especiales': {
-                name: 'Funciones Especiales',
-                area: 'Álgebra',
-                areaClass: 'area-algebra',
-                dependencies: ['geometria-solidos'],
-                prerequisites: []
-            },
-            
-            // Análisis
-            'ecuaciones-diferenciales': {
-                name: 'Ecuaciones Diferenciales',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: [],
-                prerequisites: []
-            },
-            'funciones-parametricas': {
-                name: 'Funciones Paramétricas',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['ecuaciones-diferenciales'],
-                prerequisites: []
-            },
-            'variable-compleja': {
-                name: 'Variable Compleja',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['funciones-parametricas'],
-                prerequisites: []
-            },
-            'limite-derivada': {
-                name: 'Límite en Varias Variables',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['variable-compleja'],
-                prerequisites: []
-            },
-            'funciones-superiores': {
-                name: 'Funciones Superiores Límite de Una Variable',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['limite-derivada'],
-                prerequisites: []
-            },
-            'calculo-una-variable': {
-                name: 'Cálculo de una Variable',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['funciones-superiores'],
-                prerequisites: []
-            },
-            'derivacion': {
-                name: 'Derivación',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['calculo-una-variable'],
-                prerequisites: []
-            },
-            'teorema-valor-medio': {
-                name: 'Teorema del Valor Medio',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['derivacion'],
-                prerequisites: []
-            },
-            'integracion': {
-                name: 'Integración',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['teorema-valor-medio'],
-                prerequisites: []
-            },
-            'derivadas-parciales': {
-                name: 'Derivadas Parciales',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['integracion'],
-                prerequisites: []
-            },
-            'integrales-triples': {
-                name: 'Integrales Triples',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['derivadas-parciales'],
-                prerequisites: []
-            },
-            'series-infinitas': {
-                name: 'Series Infinitas',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['integrales-triples'],
-                prerequisites: []
-            },
-            'series-taylor': {
-                name: 'Series de Taylor',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['series-infinitas'],
-                prerequisites: []
-            },
-            'series-fourier': {
-                name: 'Series de Fourier',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['series-taylor'],
-                prerequisites: []
-            },
-            'convergencia': {
-                name: 'Convergencia',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['series-fourier'],
-                prerequisites: []
-            },
-            'salto-convergencia': {
-                name: 'Salto de Convergencia',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['convergencia'],
-                prerequisites: []
-            },
-            'series-numericas': {
-                name: 'Series Numéricas',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['salto-convergencia'],
-                prerequisites: []
-            },
-            'sucesiones-numericas': {
-                name: 'Sucesiones Numéricas',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['series-numericas'],
-                prerequisites: []
-            },
-            'limite': {
-                name: 'Límite',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['sucesiones-numericas'],
-                prerequisites: []
-            },
-            'continuidad': {
-                name: 'Continuidad',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['limite'],
-                prerequisites: []
-            },
-            'teorema-calculo': {
-                name: 'Teorema del Cálculo',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['continuidad'],
-                prerequisites: []
-            },
-            'sistema-ecuaciones': {
-                name: 'Sistema de Ecuaciones 2D Físicas',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['teorema-calculo'],
-                prerequisites: []
-            },
-            'sistema-ecuaciones-lineales': {
-                name: 'Sistema de Ecuaciones Lineales',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['sistema-ecuaciones'],
-                prerequisites: []
-            },
-            'transformacion-curvas': {
-                name: 'Transformación de Curvas y Superficies',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['sistema-ecuaciones-lineales'],
-                prerequisites: []
-            },
-            'analisis-fourier': {
-                name: 'Análisis de Fourier',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['transformacion-curvas'],
-                prerequisites: []
-            },
-            'representacion-grafica': {
-                name: 'Representación Gráfica',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['analisis-fourier'],
-                prerequisites: []
-            },
-            'limites': {
-                name: 'Límites',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['representacion-grafica'],
-                prerequisites: []
-            },
-            'funciones-numericas': {
-                name: 'Funciones Numéricas de una Variable',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['limites'],
-                prerequisites: []
-            },
-            'estudio-parametrico': {
-                name: 'Estudio Paramétrico de una Curva',
-                area: 'Análisis',
-                areaClass: 'area-analisis',
-                dependencies: ['funciones-numericas'],
-                prerequisites: []
+        document.addEventListener('DOMContentLoaded', () => {
+            const curriculumWrapper = document.getElementById('curriculumWrapper');
+            const arrowSvg = document.getElementById('arrowSvg');
+            const clearProgressBtn = document.getElementById('clearProgressBtn');
+            const suggestNextStepsBtn = document.getElementById('suggestNextStepsBtn');
+
+            // Modal elements
+            const llmModalOverlay = document.getElementById('llmModalOverlay');
+            const llmModalContent = document.getElementById('llmModalContent');
+            const llmModalTitle = llmModalContent.querySelector('h3');
+            const llmModalBody = document.getElementById('llmModalBody');
+
+            let approvedUnits = JSON.parse(localStorage.getItem('approvedUnits')) || [];
+
+            // Define all units with their properties (id, name, dependencies, position, color hint for sections)
+            // Positions (x, y) are relative percentages within the curriculumWrapper
+            // Width and height are fixed in CSS, but included here for arrow calculation
+            const unitsData = [
+                // ARITMÉTICA
+                { id: 'introduccion_aritmetica', name: 'Introducción a la Aritmética', dependencies: [], x: 15, y: 75, section: 'aritmetica' },
+                { id: 'numeros_reales', name: 'Números Reales', dependencies: ['introduccion_aritmetica'], x: 15, y: 65, section: 'aritmetica' },
+                { id: 'operaciones_basicas', name: 'Operaciones Básicas', dependencies: ['introduccion_aritmetica'], x: 30, y: 65, section: 'aritmetica' },
+                { id: 'potenciacion_radicacion', name: 'Potenciación y Radicación', dependencies: ['operaciones_basicas'], x: 30, y: 55, section: 'aritmetica' },
+                { id: 'logaritmos', name: 'Logaritmos', dependencies: ['potenciacion_radicacion'], x: 30, y: 45, section: 'aritmetica' },
+
+                // ÁLGEBRA
+                { id: 'introduccion_algebra', name: 'Introducción al Álgebra', dependencies: ['numeros_reales', 'operaciones_basicas'], x: 45, y: 55, section: 'algebra' },
+                { id: 'expresiones_algebraicas', name: 'Expresiones Algebraicas', dependencies: ['introduccion_algebra'], x: 45, y: 45, section: 'algebra' },
+                { id: 'polinomios', name: 'Polinomios', dependencies: ['expresiones_algebraicas'], x: 45, y: 35, section: 'algebra' },
+                { id: 'ecuaciones_lineales', name: 'Ecuaciones Lineales', dependencies: ['polinomios'], x: 45, y: 25, section: 'algebra' },
+                { id: 'sistemas_ecuaciones', name: 'Sistemas de Ecuaciones', dependencies: ['ecuaciones_lineales'], x: 60, y: 25, section: 'algebra' },
+                { id: 'matrices_determinantes', name: 'Matrices y Determinantes', dependencies: ['sistemas_ecuaciones'], x: 60, y: 15, section: 'algebra' },
+                { id: 'vectores', name: 'Vectores', dependencies: ['matrices_determinantes'], x: 75, y: 15, section: 'algebra' },
+
+                // ANÁLISIS
+                { id: 'funciones', name: 'Funciones', dependencies: ['ecuaciones_lineales'], x: 30, y: 25, section: 'analisis' },
+                { id: 'limites', name: 'Límites', dependencies: ['funciones'], x: 30, y: 15, section: 'analisis' },
+                { id: 'derivadas', name: 'Derivadas', dependencies: ['limites'], x: 15, y: 15, section: 'analisis' },
+                { id: 'integrales', name: 'Integrales', dependencies: ['derivadas'], x: 15, y: 5, section: 'analisis' },
+                { id: 'series_sucesiones', name: 'Series y Sucesiones', dependencies: ['integrales'], x: 30, y: 5, section: 'analisis' },
+                { id: 'ecuaciones_diferenciales', name: 'Ecuaciones Diferenciales', dependencies: ['integrales', 'series_sucesiones'], x: 45, y: 5, section: 'analisis' },
+
+                // GEOMETRÍA
+                { id: 'introduccion_geometria', name: 'Introducción a la Geometría', dependencies: ['numeros_reales'], x: 75, y: 65, section: 'geometria' },
+                { id: 'geometria_plana', name: 'Geometría Plana', dependencies: ['introduccion_geometria'], x: 75, y: 55, section: 'geometria' },
+                { id: 'geometria_espacial', name: 'Geometría Espacial', dependencies: ['geometria_plana'], x: 75, y: 45, section: 'geometria' },
+                { id: 'geometria_analitica', name: 'Geometría Analítica', dependencies: ['geometria_espacial', 'vectores'], x: 75, y: 35, section: 'geometria' },
+                { id: 'transformaciones_geometricas', name: 'Transformaciones Geométricas', dependencies: ['geometria_analitica'], x: 75, y: 25, section: 'geometria' },
+                { id: 'calculo_vectorial', name: 'Cálculo Vectorial', dependencies: ['vectores', 'derivadas', 'integrales'], x: 60, y: 5, section: 'geometria' },
+                { id: 'topologia', name: 'Topología', dependencies: ['calculo_vectorial'], x: 75, y: 5, section: 'geometria' },
+
+                // Connections between sections
+                { id: 'matematicas_discretas', name: 'Matemáticas Discretas', dependencies: ['logaritmos', 'polinomios'], x: 60, y: 45, section: 'algebra' },
+                { id: 'probabilidad_estadistica', name: 'Probabilidad y Estadística', dependencies: ['logaritmos', 'sistemas_ecuaciones'], x: 60, y: 35, section: 'algebra' },
+            ];
+
+            // Map unit IDs to their data objects for easy lookup
+            const unitsMap = new Map(unitsData.map(unit => [unit.id, unit]));
+
+            function saveProgress() {
+                localStorage.setItem('approvedUnits', JSON.stringify(approvedUnits));
             }
-        };
 
-        // Estado del progreso
-        let progress = {};
-
-        // Inicializar aplicación
-        function init() {
-            loadProgress();
-            renderSubjects();
-            updateProgress();
-        }
-
-        // Cargar progreso del localStorage
-        function loadProgress() {
-            const saved = localStorage.getItem('mathProgress');
-            if (saved) {
-                progress = JSON.parse(saved);
+            function isUnitApproved(unitId) {
+                return approvedUnits.includes(unitId);
             }
-        }
 
-        // Guardar progreso en localStorage
-        function saveProgress() {
-            localStorage.setItem('mathProgress', JSON.stringify(progress));
-        }
-
-        // Verificar si una materia está disponible
-        function isSubjectAvailable(subjectId) {
-            const subject = subjects[subjectId];
-            if (!subject.dependencies || subject.dependencies.length === 0) {
-                return true;
+            function getMissingDependencies(unitId) {
+                const unit = unitsMap.get(unitId);
+                if (!unit) return [];
+                return unit.dependencies.filter(depId => !isUnitApproved(depId));
             }
-            return subject.dependencies.every(dep => progress[dep] === true);
-        }
 
-        // Obtener estado de una materia
-        function getSubjectStatus(subjectId) {
-            if (progress[subjectId]) {
-                return 'completed';
+            function openModal(title, content) {
+                llmModalTitle.textContent = title;
+                llmModalBody.innerHTML = content;
+                llmModalOverlay.classList.remove('hidden');
             }
-            if (isSubjectAvailable(subjectId)) {
-                return 'available';
+
+            function closeModal() {
+                llmModalOverlay.classList.add('hidden');
             }
-            return 'blocked';
-        }
 
-        // Obtener materias faltantes
-        function getMissingDependencies(subjectId) {
-            const subject = subjects[subjectId];
-            if (!subject.dependencies) return [];
-            
-            return subject.dependencies.filter(dep => !progress[dep])
-                .map(dep => subjects[dep].name);
-        }
+            // Make closeModal globally accessible (for the button in the modal)
+            window.closeModal = closeModal;
 
-        // Manejar click en materia
-        function handleSubjectClick(subjectId) {
-            const status = getSubjectStatus(subjectId);
-            
-            if (status === 'available') {
-                progress[subjectId] = true;
-                saveProgress();
-                renderSubjects();
-                updateProgress();
-            } else if (status === 'completed') {
-                progress[subjectId] = false;
-                saveProgress();
-                renderSubjects();
-                updateProgress();
-            }
-        }
+            async function generateSummary(unitId) {
+                const unitName = unitsMap.get(unitId)?.name || unitId;
+                openModal(`Generando Resumen para "${unitName}"...`, '<p class="text-center">Cargando... ✨</p>');
 
-        // Renderizar materias
-        function renderSubjects() {
-            const grid = document.getElementById('curriculumGrid');
-            grid.innerHTML = '';
+                try {
+                    const prompt = `Genera un resumen conciso y educativo sobre el tema "${unitName}" de matemáticas para estudiantes de ingeniería. Enfócate en los conceptos clave y su relevancia.`;
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // Canvas will provide this
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-            Object.keys(subjects).forEach(subjectId => {
-                const subject = subjects[subjectId];
-                const status = getSubjectStatus(subjectId);
-                
-                const card = document.createElement('div');
-                card.className = `subject-card ${status} ${subject.areaClass}`;
-                card.onclick = () => handleSubjectClick(subjectId);
-                
-                // Manejo de tooltip para materias bloqueadas
-                if (status === 'blocked') {
-                    card.onmouseenter = (e) => showTooltip(e, subjectId);
-                    card.onmouseleave = hideTooltip;
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        llmModalBody.innerHTML = `<p>${text}</p>`;
+                        llmModalTitle.textContent = `Resumen de "${unitName}"`;
+                    } else {
+                        llmModalBody.innerHTML = '<p class="text-red-500">Error: No se pudo generar el resumen. Inténtalo de nuevo.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error al llamar a la API de Gemini:', error);
+                    llmModalBody.innerHTML = '<p class="text-red-500">Error de conexión o del servidor. Inténtalo de nuevo.</p>';
                 }
-                
-                const statusText = {
-                    'available': 'Disponible',
-                    'completed': '✓ Completada',
-                    'blocked': '🔒 Bloqueada'
-                };
-                
-                const statusClass = {
-                    'available': 'status-available',
-                    'completed': 'status-completed',
-                    'blocked': 'status-blocked'
-                };
-                
-                card.innerHTML = `
-                    <div class="subject-name">${subject.name}</div>
-                    <div class="subject-area">${subject.area}</div>
-                    <div class="subject-status ${statusClass[status]}">
-                        ${statusText[status]}
-                    </div>
-                `;
-                
-                grid.appendChild(card);
-            });
-        }
-
-        // Mostrar tooltip
-        function showTooltip(event, subjectId) {
-            const missing = getMissingDependencies(subjectId);
-            const tooltip = document.getElementById('tooltip');
-            
-            if (missing.length > 0) {
-                tooltip.innerHTML = `Requiere completar: ${missing.join(', ')}`;
-                tooltip.style.opacity = '1';
-                tooltip.style.left = event.pageX + 10 + 'px';
-                tooltip.style.top = event.pageY - 10 + 'px';
             }
-        }
 
-        // Ocultar tooltip
-        function hideTooltip() {
-            document.getElementById('tooltip').style.opacity = '0';
-        }
+            async function suggestNextSteps() {
+                openModal('Generando Sugerencias de Estudio...', '<p class="text-center">Cargando... ✨</p>');
 
-        // Actualizar barra de progreso
-        function updateProgress() {
-            const total = Object.keys(subjects).length;
-            const completed = Object.values(progress).filter(Boolean).length;
-            const percentage = Math.round((completed / total) * 100);
-            
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressText').textContent = `${percentage}% completado (${completed}/${total} materias)`;
-        }
+                try {
+                    const approvedUnitNames = approvedUnits.map(id => unitsMap.get(id)?.name).filter(Boolean);
+                    let prompt;
+                    if (approvedUnitNames.length > 0) {
+                        prompt = `Basado en los siguientes temas de matemáticas ya aprobados por un estudiante de ingeniería: ${approvedUnitNames.join(', ')}. Sugiere los 3 a 5 siguientes pasos lógicos en su ruta de estudio. Sé conciso y menciona por qué cada sugerencia es relevante.`;
+                    } else {
+                        prompt = `Un estudiante de ingeniería acaba de empezar su malla curricular de matemáticas. Sugiere los 3 a 5 primeros temas fundamentales para comenzar, explicando brevemente por qué son importantes.`;
+                    }
 
-        // Reiniciar progreso
-        function resetProgress() {
-            if (confirm('¿Estás seguro de que quieres reiniciar todo el progreso?')) {
-                progress = {};
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // Canvas will provide this
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        llmModalBody.innerHTML = `<p>${text}</p>`;
+                        llmModalTitle.textContent = `Sugerencias de Estudio ✨`;
+                    } else {
+                        llmModalBody.innerHTML = '<p class="text-red-500">Error: No se pudieron generar sugerencias. Inténtalo de nuevo.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error al llamar a la API de Gemini:', error);
+                    llmModalBody.innerHTML = '<p class="text-red-500">Error de conexión o del servidor. Inténtalo de nuevo.</p>';
+                }
+            }
+
+
+            function updateUnitStates() {
+                document.querySelectorAll('.unit').forEach(unitElement => {
+                    const unitId = unitElement.dataset.id;
+                    const missingDeps = getMissingDependencies(unitId);
+                    const tooltipSpan = unitElement.querySelector('.tooltip');
+                    const summaryBtn = unitElement.querySelector('.generate-summary-btn');
+
+                    if (isUnitApproved(unitId)) {
+                        unitElement.classList.add('approved');
+                        unitElement.classList.remove('locked');
+                        unitElement.querySelector('.unit-status').textContent = 'Aprobado ✅';
+                        if (tooltipSpan) tooltipSpan.textContent = ''; // Clear tooltip for approved
+                        if (summaryBtn) summaryBtn.classList.remove('hidden'); // Show summary button
+                    } else if (missingDeps.length === 0) {
+                        unitElement.classList.remove('locked');
+                        unitElement.classList.remove('approved');
+                        unitElement.querySelector('.unit-status').textContent = 'Click para aprobar';
+                        unitElement.style.cursor = 'pointer';
+                        if (tooltipSpan) tooltipSpan.textContent = ''; // Clear tooltip for unlockable
+                        if (summaryBtn) summaryBtn.classList.add('hidden'); // Hide summary button
+                    } else {
+                        unitElement.classList.add('locked');
+                        unitElement.classList.remove('approved');
+                        unitElement.querySelector('.unit-status').textContent = 'Bloqueado 🔒';
+                        unitElement.style.cursor = 'not-allowed';
+                        if (tooltipSpan) {
+                            const missingNames = missingDeps.map(depId => unitsMap.get(depId)?.name || depId).join(', ');
+                            tooltipSpan.textContent = `Falta(n): ${missingNames}`;
+                        }
+                        if (summaryBtn) summaryBtn.classList.add('hidden'); // Hide summary button
+                    }
+                });
+                drawArrows(); // Redraw arrows after state changes
+            }
+
+            function handleUnitClick(event) {
+                const unitElement = event.currentTarget;
+                const unitId = unitElement.dataset.id;
+
+                // Check if the click originated from the summary button
+                if (event.target.classList.contains('generate-summary-btn')) {
+                    // This click is handled by the summary button's own listener
+                    return;
+                }
+
+                if (unitElement.classList.contains('locked')) {
+                    // Unit is locked, do nothing (tooltip will show)
+                    return;
+                }
+
+                if (isUnitApproved(unitId)) {
+                    // If already approved, unapprove it (toggle functionality)
+                    approvedUnits = approvedUnits.filter(id => id !== unitId);
+                } else {
+                    // If not approved and dependencies are met, approve it
+                    approvedUnits.push(unitId);
+                }
                 saveProgress();
-                renderSubjects();
-                updateProgress();
+                updateUnitStates();
             }
-        }
 
-        // Inicializar cuando la página cargue
-        window.onload = init;
+            function renderUnits() {
+                unitsData.forEach(unit => {
+                    const unitElement = document.createElement('div');
+                    unitElement.classList.add('unit');
+                    unitElement.dataset.id = unit.id;
+                    unitElement.style.left = `${unit.x}%`;
+                    unitElement.style.top = `${unit.y}%`;
+
+                    unitElement.innerHTML = `
+                        <div class="unit-title">${unit.name}</div>
+                        <div class="unit-status"></div>
+                        <span class="tooltip"></span>
+                        <button class="generate-summary-btn mt-2 bg-purple-500 hover:bg-purple-600 text-white text-xs py-1 px-2 rounded-md hidden">
+                            ✨ Resumen
+                        </button>
+                    `;
+                    unitElement.addEventListener('click', handleUnitClick);
+                    curriculumWrapper.appendChild(unitElement);
+
+                    // Add event listener for the summary button
+                    const summaryBtn = unitElement.querySelector('.generate-summary-btn');
+                    summaryBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent unit click event from firing
+                        generateSummary(unit.id);
+                    });
+                });
+            }
+
+            function getUnitCenter(unitId) {
+                const unitElement = document.querySelector(`.unit[data-id="${unitId}"]`);
+                if (!unitElement) return null;
+
+                const rect = unitElement.getBoundingClientRect();
+                const wrapperRect = curriculumWrapper.getBoundingClientRect();
+
+                // Calculate center relative to the wrapper
+                const centerX = (rect.left + rect.right) / 2 - wrapperRect.left;
+                const centerY = (rect.top + rect.bottom) / 2 - wrapperRect.top;
+
+                return { x: centerX, y: centerY };
+            }
+
+            function drawArrows() {
+                arrowSvg.innerHTML = `
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280" />
+                        </marker>
+                        <marker id="arrowhead-approved" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#10b981" />
+                        </marker>
+                    </defs>
+                `; // Clear existing arrows and re-add markers
+
+                unitsData.forEach(unit => {
+                    const fromUnit = unit;
+                    const fromCenter = getUnitCenter(fromUnit.id);
+
+                    if (!fromCenter) return;
+
+                    fromUnit.dependencies.forEach(depId => {
+                        const toUnit = unitsMap.get(depId);
+                        const toCenter = getUnitCenter(toUnit.id);
+
+                        if (!toCenter) return;
+
+                        // Determine connection points for cleaner arrows (e.g., right side to left side)
+                        let x1 = fromCenter.x;
+                        let y1 = fromCenter.y;
+                        let x2 = toCenter.x;
+                        let y2 = toCenter.y;
+
+                        // Adjust start/end points to connect to unit edges, not just centers
+                        // This is a simplified logic and might need more refinement for complex overlaps
+                        const unitWidth = document.querySelector('.unit').offsetWidth;
+                        const unitHeight = document.querySelector('.unit').offsetHeight;
+
+                        // Try to connect from the side closest to the target
+                        // This logic can be improved for more precise connections based on relative positions
+                        if (Math.abs(x1 - x2) > Math.abs(y1 - y2)) { // More horizontal movement
+                            if (x1 < x2) { x1 += unitWidth / 2; x2 -= unitWidth / 2; }
+                            else { x1 -= unitWidth / 2; x2 += unitWidth / 2; }
+                        } else { // More vertical movement
+                            if (y1 < y2) { y1 += unitHeight / 2; y2 -= unitHeight / 2; }
+                            else { y1 -= unitHeight / 2; y2 += unitHeight / 2; }
+                        }
+
+
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x2);
+                        line.setAttribute('y2', y2);
+
+                        // Check if the path is "approved" (i.e., both units in the dependency chain are approved)
+                        const isPathApproved = isUnitApproved(fromUnit.id) && isUnitApproved(toUnit.id);
+                        line.classList.add('arrow-line');
+                        if (isPathApproved) {
+                            line.classList.add('approved-path');
+                            line.setAttribute('marker-end', 'url(#arrowhead-approved)');
+                        } else {
+                            line.setAttribute('marker-end', 'url(#arrowhead)');
+                        }
+
+                        arrowSvg.appendChild(line);
+                    });
+                });
+            }
+
+            // Initial rendering and state update
+            renderUnits();
+            updateUnitStates();
+            // Redraw arrows on window resize to ensure correct positioning
+            window.addEventListener('resize', () => {
+                drawArrows();
+                // Re-calculate unit positions if they are percentage based and wrapper size changes
+                // For fixed pixel units, only arrow redraw is needed.
+            });
+
+            // Clear progress button functionality
+            clearProgressBtn.addEventListener('click', () => {
+                if (confirm('¿Estás seguro de que quieres borrar todo el progreso? Esta acción no se puede deshacer.')) {
+                    localStorage.removeItem('approvedUnits');
+                    approvedUnits = [];
+                    updateUnitStates();
+                    alert('Progreso borrado exitosamente.');
+                }
+            });
+
+            // Suggest next steps button functionality
+            suggestNextStepsBtn.addEventListener('click', suggestNextSteps);
+        });
     </script>
 </body>
 </html>
