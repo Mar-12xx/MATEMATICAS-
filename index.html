@@ -1,3 +1,4 @@
+mejorame este codigo porque la pagina es espantosa estéticamente y de diseño cambiale todo lo que creas necesario, tipografía, gamas de colores, etc.
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,39 +7,46 @@
     <title>Malla Curricular de Ingeniería</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins for headings, Inter for body text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700;700&display=swap" rel="stylesheet">
     <style>
         /* Custom styles to override or enhance Tailwind */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f8fafc; /* Light blue-gray background */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 2.5rem; /* Increased padding */
             overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
         h1 {
-            @apply text-3xl font-extrabold text-gray-800 mb-6 text-center;
+            font-family: 'Poppins', sans-serif;
+            @apply text-4xl font-bold text-gray-800 mb-8 text-center leading-tight; /* Larger, bolder title */
         }
 
         .curriculum-wrapper {
             position: relative;
             width: 100%;
-            max-width: 1200px; /* Max width for the entire map */
+            max-width: 1300px; /* Wider map */
             min-height: 2000px; /* Adjusted height for new layout */
-            margin-top: 20px;
-            margin-bottom: 50px;
+            margin-top: 2rem;
+            margin-bottom: 3rem;
+            background-color: #ffffff; /* White background for the map area */
+            border-radius: 1rem; /* Rounded corners for the map container */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Softer, larger shadow */
+            padding: 2rem; /* Padding inside the wrapper */
         }
 
         .unit {
             position: absolute;
-            background-color: #ffffff;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.5rem;
-            padding: 0.75rem 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #f0f4f8; /* Lighter blue-gray for units */
+            border: 1px solid #cbd5e1; /* Subtle border */
+            border-radius: 0.75rem; /* More rounded corners */
+            padding: 0.8rem 1.2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Enhanced shadow */
             cursor: pointer;
             transition: all 0.3s ease-in-out;
             display: flex;
@@ -46,65 +54,71 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            font-size: 0.9rem;
-            line-height: 1.2;
-            width: 130px; /* Slightly wider for longer names */
-            height: 70px; /* Slightly taller for more content */
+            font-size: 0.95rem;
+            line-height: 1.3;
+            width: 140px; /* Slightly wider units */
+            height: auto; /* Auto height to accommodate buttons */
+            min-height: 75px; /* Minimum height */
             z-index: 10;
+            color: #334155; /* Darker text for better contrast */
         }
 
         .unit:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px) scale(1.02); /* More pronounced hover effect */
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
         }
 
         .unit.approved {
-            background-color: #d1fae5; /* Green-100 */
-            border-color: #34d399; /* Green-400 */
-            color: #065f46; /* Green-800 */
+            background-color: #dcfce7; /* Light green */
+            border-color: #4ade80; /* Brighter green */
+            color: #166534; /* Darker green text */
+            box-shadow: 0 4px 12px rgba(52, 213, 153, 0.2); /* Greenish shadow */
         }
 
         .unit.locked {
-            background-color: #f3f4f6; /* Gray-100 */
-            border-color: #cbd5e1; /* Gray-300 */
-            color: #6b7280; /* Gray-500 */
+            background-color: #e2e8f0; /* Slightly darker gray for locked */
+            border-color: #94a3b8; /* Medium gray border */
+            color: #64748b; /* Medium gray text */
             cursor: not-allowed;
+            opacity: 0.8; /* Slightly faded */
         }
 
         .unit-title {
-            font-weight: 600; /* semibold */
-            margin-bottom: 0.25rem;
+            font-family: 'Poppins', sans-serif; /* Poppins for unit titles */
+            font-weight: 700; /* Bold */
+            margin-bottom: 0.3rem;
         }
 
         .unit-status {
-            font-size: 0.8rem;
-            color: #9ca3af; /* Gray-400 */
+            font-size: 0.85rem;
+            color: #94a3b8; /* Gray-400 */
         }
 
         .unit.approved .unit-status {
-            color: #065f46; /* Green-800 */
+            color: #166534; /* Darker green */
         }
 
         .unit.locked .unit-status {
-            color: #9ca3af; /* Gray-400 */
+            color: #94a3b8; /* Gray-400 */
         }
 
         .tooltip {
             visibility: hidden;
-            background-color: #333;
-            color: #fff;
+            background-color: #1e293b; /* Darker blue-gray for tooltip */
+            color: #f8fafc; /* Light text */
             text-align: center;
-            border-radius: 0.375rem; /* rounded-md */
-            padding: 0.3rem 0.6rem;
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.8rem;
             position: absolute;
-            z-index: 20; /* Above units */
-            bottom: 110%; /* Position above the unit */
+            z-index: 20;
+            bottom: 115%; /* Position above the unit */
             left: 50%;
             transform: translateX(-50%);
             opacity: 0;
             transition: opacity 0.3s, visibility 0.3s;
             white-space: nowrap;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .unit.locked:hover .tooltip {
@@ -113,55 +127,103 @@
         }
 
         .clear-progress-btn {
-            @apply bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-300;
+            @apply bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105;
+        }
+
+        .suggest-btn {
+            @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105;
+        }
+
+        .llm-unit-btn {
+            @apply mt-1 bg-purple-600 hover:bg-purple-700 text-white text-xs py-1 px-2 rounded-md shadow-sm transition-colors duration-200;
         }
 
         /* Styles for sections (Análisis, Álgebra, Geometría, Aritmética) */
         .section-label {
+            font-family: 'Poppins', sans-serif;
             position: absolute;
-            font-size: 1.5rem;
+            font-size: 1.8rem; /* Larger section labels */
             font-weight: bold;
-            color: #2c3e50;
-            z-index: 15; /* Above units */
-            background-color: #f0f2f5; /* Match body background */
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
+            color: #1e293b; /* Darker text for labels */
+            z-index: 15;
+            background-color: #f8fafc; /* Match body background for a subtle lift */
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Subtle shadow for labels */
         }
 
-        /* Specific positioning for section labels based on the new layout */
-        #analisis-label { top: 0%; left: 10%; color: #ef4444; /* Red */ }
-        #algebra-label { top: 0%; left: 40%; color: #3b82f6; /* Blue */ }
-        #geometria-label { top: 0%; left: 70%; color: #22c55e; /* Green */ }
-        #aritmetica-label { top: 60%; left: 10%; color: #6b7280; /* Gray */ } /* Moved lower to group Aritmetica */
+        /* Positioning for section labels and their content columns */
+        #analisis-label { top: 1rem; left: 10%; color: #ef4444; } /* Red */
+        #algebra-label { top: 1rem; left: 40%; color: #3b82f6; } /* Blue */
+        #geometria-label { top: 1rem; left: 70%; color: #22c55e; } /* Green */
+        #aritmetica-label { top: 1200px; left: 10%; color: #6b7280; } /* Gray, positioned lower for its section */
+
+        /* Modal Styles */
+        #llmModalOverlay {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        #llmModalContent {
+            animation: fadeInScale 0.3s ease-out;
+            @apply p-8 rounded-2xl; /* More padding and rounded corners */
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .modal-close-btn {
+            @apply absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl font-light;
+        }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .unit {
-                width: 90px; /* Smaller width for mobile */
-                height: 55px; /* Smaller height for mobile */
-                font-size: 0.7rem;
-                padding: 0.4rem 0.6rem;
+            body {
+                padding: 1rem;
             }
-            .unit-title {
-                font-size: 0.8rem;
-            }
-            .unit-status {
-                font-size: 0.6rem;
-            }
-            .section-label {
-                font-size: 1rem;
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 1.5rem;
             }
             .curriculum-wrapper {
-                min-height: 2500px; /* Increase height for smaller screens */
+                min-height: 3000px; /* Increase height for smaller screens */
+                padding: 1rem;
+            }
+            .unit {
+                width: 110px; /* Smaller width for mobile */
+                min-height: 65px; /* Smaller height for mobile */
+                font-size: 0.8rem;
+                padding: 0.5rem 0.7rem;
+            }
+            .unit-title {
+                font-size: 0.9rem;
+            }
+            .unit-status {
+                font-size: 0.7rem;
+            }
+            .section-label {
+                font-size: 1.2rem;
+                padding: 0.3rem 0.6rem;
+            }
+            .clear-progress-btn, .suggest-btn {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.9rem;
+            }
+            .modal-close-btn {
+                font-size: 1.8rem;
             }
         }
     </style>
 </head>
 <body>
-    <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Guía Propuesta para Estudiar Temas de Matemática para Carreras de Ingeniería</h1>
-    <div class="flex flex-wrap justify-center gap-4 mb-6">
+    <h1>Guía Propuesta para Estudiar Temas de Matemática para Carreras de Ingeniería</h1>
+    <div class="flex flex-wrap justify-center gap-4 mb-8">
         <button id="clearProgressBtn" class="clear-progress-btn">Borrar Progreso</button>
-        <button id="suggestNextStepsBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-300">
+        <button id="suggestNextStepsBtn" class="suggest-btn">
             ✨ Sugerir Siguientes Pasos
         </button>
     </div>
@@ -182,7 +244,7 @@
         <div id="llmModalContent" class="bg-white p-6 rounded-lg shadow-xl max-w-lg w-11/12 max-h-[80vh] overflow-y-auto relative">
             <h3 class="text-xl font-bold mb-4"></h3>
             <div id="llmModalBody" class="text-gray-700 mb-4"></div>
-            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl" onclick="closeModal()">
+            <button class="modal-close-btn" onclick="closeModal()">
                 &times;
             </button>
         </div>
@@ -205,64 +267,65 @@
             // Define all units with their properties (id, name, dependencies, position, color hint for sections)
             // Positions (x, y) are relative percentages within the curriculumWrapper
             // Units are now grouped by section and ordered top-to-bottom within their columns
+            // Adjusted positions for a more cohesive and less "separated" look.
             const unitsData = [
-                // ARITMÉTICA (Column 1, starting lower)
-                { id: 'empezar_aqui', name: 'Empezar Aquí', dependencies: [], x: 15, y: 65, section: 'aritmetica' },
-                { id: 'introduccion_aritmetica', name: 'Introducción a la Aritmética', dependencies: ['empezar_aqui'], x: 15, y: 70, section: 'aritmetica' },
-                { id: 'conjuntos', name: 'Conjuntos', dependencies: ['introduccion_aritmetica'], x: 5, y: 75, section: 'aritmetica' },
-                { id: 'numeros_reales', name: 'Números Reales', dependencies: ['introduccion_aritmetica'], x: 15, y: 75, section: 'aritmetica' },
-                { id: 'valor_absoluto_aritmetica', name: 'Valor Absoluto', dependencies: ['numeros_reales'], x: 5, y: 80, section: 'aritmetica' },
-                { id: 'operaciones_basicas', name: 'Operaciones Básicas', dependencies: ['introduccion_aritmetica'], x: 25, y: 75, section: 'aritmetica' },
-                { id: 'razones_proporciones', name: 'Razones y Proporciones', dependencies: ['operaciones_basicas'], x: 25, y: 80, section: 'aritmetica' },
-                { id: 'porcentajes', name: 'Porcentajes', dependencies: ['razones_proporciones'], x: 25, y: 85, section: 'aritmetica' },
-                { id: 'potenciacion_radicacion', name: 'Potenciación y Radicación', dependencies: ['operaciones_basicas'], x: 15, y: 85, section: 'aritmetica' },
-                { id: 'logaritmos', name: 'Logaritmos', dependencies: ['potenciacion_radicacion'], x: 15, y: 90, section: 'aritmetica' },
+                // ANÁLISIS (Column 1)
+                { id: 'funciones_analisis', name: 'Funciones (Análisis)', dependencies: ['ecuaciones_lineales', 'inecuaciones', 'ecuaciones_cuadraticas', 'logaritmos'], x: 10, y: 80, section: 'analisis' },
+                { id: 'limites', name: 'Límites', dependencies: ['funciones_analisis'], x: 10, y: 190, section: 'analisis' },
+                { id: 'continuidad', name: 'Continuidad', dependencies: ['limites'], x: 10, y: 300, section: 'analisis' },
+                { id: 'derivadas', name: 'Derivadas', dependencies: ['continuidad'], x: 10, y: 410, section: 'analisis' },
+                { id: 'aplicaciones_derivada', name: 'Aplicaciones de la Derivada', dependencies: ['derivadas'], x: 10, y: 520, section: 'analisis' },
+                { id: 'integrales', name: 'Integrales', dependencies: ['aplicaciones_derivada'], x: 10, y: 630, section: 'analisis' },
+                { id: 'aplicaciones_integral', name: 'Aplicaciones de la Integral', dependencies: ['integrales'], x: 10, y: 740, section: 'analisis' },
+                { id: 'series_sucesiones', name: 'Series y Sucesiones', dependencies: ['integrales'], x: 25, y: 740, section: 'analisis' },
+                { id: 'ecuaciones_diferenciales', name: 'Ecuaciones Diferenciales', dependencies: ['integrales', 'series_sucesiones'], x: 40, y: 740, section: 'analisis' },
+                { id: 'funciones_varias_variables', name: 'Funciones de Varias Variables', dependencies: ['derivadas', 'integrales', 'vectores'], x: 10, y: 850, section: 'analisis' },
+                { id: 'derivadas_parciales', name: 'Derivadas Parciales', dependencies: ['funciones_varias_variables'], x: 25, y: 850, section: 'analisis' },
+                { id: 'integrales_multiples', name: 'Integrales Múltiples', dependencies: ['derivadas_parciales'], x: 40, y: 850, section: 'analisis' },
+                { id: 'ecuaciones_diferenciales_parciales', name: 'Ecuaciones Diferenciales Parciales', dependencies: ['ecuaciones_diferenciales', 'integrales_multiples'], x: 55, y: 850, section: 'analisis' },
+                { id: 'transformadas_laplace', name: 'Transformadas de Laplace', dependencies: ['integrales', 'ecuaciones_diferenciales'], x: 10, y: 960, section: 'analisis' },
+                { id: 'transformadas_fourier', name: 'Transformadas de Fourier', dependencies: ['integrales', 'series_sucesiones'], x: 25, y: 960, section: 'analisis' },
 
                 // ÁLGEBRA (Column 2)
-                { id: 'introduccion_algebra', name: 'Introducción al Álgebra', dependencies: ['numeros_reales', 'operaciones_basicas'], x: 45, y: 5, section: 'algebra' },
-                { id: 'expresiones_algebraicas', name: 'Expresiones Algebraicas', dependencies: ['introduccion_algebra'], x: 45, y: 10, section: 'algebra' },
-                { id: 'productos_notables', name: 'Productos Notables', dependencies: ['expresiones_algebraicas'], x: 45, y: 15, section: 'algebra' },
-                { id: 'factorizacion', name: 'Factorización', dependencies: ['productos_notables'], x: 45, y: 20, section: 'algebra' },
-                { id: 'fracciones_algebraicas', name: 'Fracciones Algebraicas', dependencies: ['factorizacion'], x: 45, y: 25, section: 'algebra' },
-                { id: 'ecuaciones_lineales', name: 'Ecuaciones Lineales', dependencies: ['fracciones_algebraicas'], x: 45, y: 30, section: 'algebra' },
-                { id: 'inecuaciones', name: 'Inecuaciones', dependencies: ['ecuaciones_lineales'], x: 30, y: 35, section: 'algebra' },
-                { id: 'ecuaciones_cuadraticas', name: 'Ecuaciones Cuadráticas', dependencies: ['ecuaciones_lineales'], x: 60, y: 35, section: 'algebra' },
-                { id: 'sistemas_ecuaciones', name: 'Sistemas de Ecuaciones', dependencies: ['ecuaciones_lineales'], x: 75, y: 35, section: 'algebra' },
-                { id: 'matrices_determinantes', name: 'Matrices y Determinantes', dependencies: ['sistemas_ecuaciones'], x: 75, y: 40, section: 'algebra' },
-                { id: 'vectores', name: 'Vectores', dependencies: ['matrices_determinantes'], x: 75, y: 45, section: 'algebra' },
-                { id: 'numeros_complejos', name: 'Números Complejos', dependencies: ['ecuaciones_cuadraticas'], x: 60, y: 45, section: 'algebra' },
-
-                // ANÁLISIS (Column 1)
-                { id: 'funciones_analisis', name: 'Funciones (Análisis)', dependencies: ['ecuaciones_lineales', 'inecuaciones', 'ecuaciones_cuadraticas', 'logaritmos'], x: 15, y: 5, section: 'analisis' },
-                { id: 'limites', name: 'Límites', dependencies: ['funciones_analisis'], x: 15, y: 10, section: 'analisis' },
-                { id: 'continuidad', name: 'Continuidad', dependencies: ['limites'], x: 15, y: 15, section: 'analisis' },
-                { id: 'derivadas', name: 'Derivadas', dependencies: ['continuidad'], x: 15, y: 20, section: 'analisis' },
-                { id: 'aplicaciones_derivada', name: 'Aplicaciones de la Derivada', dependencies: ['derivadas'], x: 15, y: 25, section: 'analisis' },
-                { id: 'integrales', name: 'Integrales', dependencies: ['aplicaciones_derivada'], x: 15, y: 30, section: 'analisis' },
-                { id: 'aplicaciones_integral', name: 'Aplicaciones de la Integral', dependencies: ['integrales'], x: 15, y: 35, section: 'analisis' },
-                { id: 'series_sucesiones', name: 'Series y Sucesiones', dependencies: ['integrales'], x: 30, y: 35, section: 'analisis' },
-                { id: 'ecuaciones_diferenciales', name: 'Ecuaciones Diferenciales', dependencies: ['integrales', 'series_sucesiones'], x: 45, y: 35, section: 'analisis' },
-                { id: 'funciones_varias_variables', name: 'Funciones de Varias Variables', dependencies: ['derivadas', 'integrales', 'vectores'], x: 15, y: 40, section: 'analisis' },
-                { id: 'derivadas_parciales', name: 'Derivadas Parciales', dependencies: ['funciones_varias_variables'], x: 30, y: 40, section: 'analisis' },
-                { id: 'integrales_multiples', name: 'Integrales Múltiples', dependencies: ['derivadas_parciales'], x: 45, y: 40, section: 'analisis' },
-                { id: 'ecuaciones_diferenciales_parciales', name: 'Ecuaciones Diferenciales Parciales', dependencies: ['ecuaciones_diferenciales', 'integrales_multiples'], x: 60, y: 40, section: 'analisis' },
-                { id: 'transformadas_laplace', name: 'Transformadas de Laplace', dependencies: ['integrales', 'ecuaciones_diferenciales'], x: 0, y: 45, section: 'analisis' },
-                { id: 'transformadas_fourier', name: 'Transformadas de Fourier', dependencies: ['integrales', 'series_sucesiones'], x: 0, y: 50, section: 'analisis' },
+                { id: 'introduccion_algebra', name: 'Introducción al Álgebra', dependencies: ['numeros_reales', 'operaciones_basicas'], x: 40, y: 80, section: 'algebra' },
+                { id: 'expresiones_algebraicas', name: 'Expresiones Algebraicas', dependencies: ['introduccion_algebra'], x: 40, y: 190, section: 'algebra' },
+                { id: 'productos_notables', name: 'Productos Notables', dependencies: ['expresiones_algebraicas'], x: 40, y: 300, section: 'algebra' },
+                { id: 'factorizacion', name: 'Factorización', dependencies: ['productos_notables'], x: 40, y: 410, section: 'algebra' },
+                { id: 'fracciones_algebraicas', name: 'Fracciones Algebraicas', dependencies: ['factorizacion'], x: 40, y: 520, section: 'algebra' },
+                { id: 'ecuaciones_lineales', name: 'Ecuaciones Lineales', dependencies: ['fracciones_algebraicas'], x: 40, y: 630, section: 'algebra' },
+                { id: 'inecuaciones', name: 'Inecuaciones', dependencies: ['ecuaciones_lineales'], x: 25, y: 740, section: 'algebra' }, /* Cross-section dependency */
+                { id: 'ecuaciones_cuadraticas', name: 'Ecuaciones Cuadráticas', dependencies: ['ecuaciones_lineales'], x: 55, y: 740, section: 'algebra' },
+                { id: 'sistemas_ecuaciones', name: 'Sistemas de Ecuaciones', dependencies: ['ecuaciones_lineales'], x: 70, y: 740, section: 'algebra' },
+                { id: 'matrices_determinantes', name: 'Matrices y Determinantes', dependencies: ['sistemas_ecuaciones'], x: 70, y: 850, section: 'algebra' },
+                { id: 'vectores', name: 'Vectores', dependencies: ['matrices_determinantes'], x: 70, y: 960, section: 'algebra' },
+                { id: 'numeros_complejos', name: 'Números Complejos', dependencies: ['ecuaciones_cuadraticas'], x: 55, y: 850, section: 'algebra' },
 
                 // GEOMETRÍA (Column 3)
-                { id: 'introduccion_geometria', name: 'Introducción a la Geometría', dependencies: ['numeros_reales'], x: 90, y: 5, section: 'geometria' },
-                { id: 'geometria_plana', name: 'Geometría Plana', dependencies: ['introduccion_geometria'], x: 90, y: 10, section: 'geometria' },
-                { id: 'trigonometria', name: 'Trigonometría', dependencies: ['geometria_plana'], x: 90, y: 15, section: 'geometria' },
-                { id: 'geometria_espacial', name: 'Geometría Espacial', dependencies: ['geometria_plana'], x: 90, y: 20, section: 'geometria' },
-                { id: 'geometria_analitica', name: 'Geometría Analítica', dependencies: ['geometria_espacial', 'vectores'], x: 90, y: 25, section: 'geometria' },
-                { id: 'conicas', name: 'Cónicas', dependencies: ['geometria_analitica'], x: 90, y: 30, section: 'geometria' },
-                { id: 'transformaciones_geometricas', name: 'Transformaciones Geométricas', dependencies: ['geometria_analitica'], x: 90, y: 35, section: 'geometria' },
-                { id: 'calculo_vectorial', name: 'Cálculo Vectorial', dependencies: ['vectores', 'derivadas', 'integrales'], x: 75, y: 50, section: 'geometria' },
-                { id: 'topologia', name: 'Topología', dependencies: ['calculo_vectorial'], x: 90, y: 50, section: 'geometria' },
+                { id: 'introduccion_geometria', name: 'Introducción a la Geometría', dependencies: ['numeros_reales'], x: 70, y: 80, section: 'geometria' },
+                { id: 'geometria_plana', name: 'Geometría Plana', dependencies: ['introduccion_geometria'], x: 70, y: 190, section: 'geometria' },
+                { id: 'trigonometria', name: 'Trigonometría', dependencies: ['geometria_plana'], x: 70, y: 300, section: 'geometria' },
+                { id: 'geometria_espacial', name: 'Geometría Espacial', dependencies: ['geometria_plana'], x: 70, y: 410, section: 'geometria' },
+                { id: 'geometria_analitica', name: 'Geometría Analítica', dependencies: ['geometria_espacial', 'vectores'], x: 70, y: 520, section: 'geometria' },
+                { id: 'conicas', name: 'Cónicas', dependencies: ['geometria_analitica'], x: 70, y: 630, section: 'geometria' },
+                { id: 'transformaciones_geometricas', name: 'Transformaciones Geométricas', dependencies: ['geometria_analitica'], x: 70, y: 740, section: 'geometria' },
+                { id: 'calculo_vectorial', name: 'Cálculo Vectorial', dependencies: ['vectores', 'derivadas', 'integrales'], x: 85, y: 850, section: 'geometria' },
+                { id: 'topologia', name: 'Topología', dependencies: ['calculo_vectorial'], x: 85, y: 960, section: 'geometria' },
 
-                // Connections between sections / Other (Positioned to fit logically)
-                { id: 'matematicas_discretas', name: 'Matemáticas Discretas', dependencies: ['logaritmos', 'productos_notables', 'conjuntos'], x: 45, y: 90, section: 'algebra' },
-                { id: 'probabilidad_estadistica', name: 'Probabilidad y Estadística', dependencies: ['logaritmos', 'sistemas_ecuaciones', 'conjuntos'], x: 75, y: 90, section: 'algebra' },
+                // ARITMÉTICA (Starts lower, then branches up to other sections)
+                { id: 'empezar_aqui', name: 'Empezar Aquí', dependencies: [], x: 40, y: 1300, section: 'aritmetica' },
+                { id: 'introduccion_aritmetica', name: 'Introducción a la Aritmética', dependencies: ['empezar_aqui'], x: 40, y: 1410, section: 'aritmetica' },
+                { id: 'conjuntos', name: 'Conjuntos', dependencies: ['introduccion_aritmetica'], x: 25, y: 1520, section: 'aritmetica' },
+                { id: 'numeros_reales', name: 'Números Reales', dependencies: ['introduccion_aritmetica'], x: 40, y: 1520, section: 'aritmetica' },
+                { id: 'valor_absoluto_aritmetica', name: 'Valor Absoluto', dependencies: ['numeros_reales'], x: 25, y: 1630, section: 'aritmetica' },
+                { id: 'operaciones_basicas', name: 'Operaciones Básicas', dependencies: ['introduccion_aritmetica'], x: 55, y: 1520, section: 'aritmetica' },
+                { id: 'razones_proporciones', name: 'Razones y Proporciones', dependencies: ['operaciones_basicas'], x: 55, y: 1630, section: 'aritmetica' },
+                { id: 'porcentajes', name: 'Porcentajes', dependencies: ['razones_proporciones'], x: 55, y: 1740, section: 'aritmetica' },
+                { id: 'potenciacion_radicacion', name: 'Potenciación y Radicación', dependencies: ['operaciones_basicas'], x: 40, y: 1740, section: 'aritmetica' },
+                { id: 'logaritmos', name: 'Logaritmos', dependencies: ['potenciacion_radicacion'], x: 40, y: 1850, section: 'aritmetica' },
+
+                // Connections between sections / Other (Positioned to fit logically within the new flow)
+                { id: 'matematicas_discretas', name: 'Matemáticas Discretas', dependencies: ['logaritmos', 'productos_notables', 'conjuntos'], x: 70, y: 1850, section: 'algebra' },
+                { id: 'probabilidad_estadistica', name: 'Probabilidad y Estadística', dependencies: ['logaritmos', 'sistemas_ecuaciones', 'conjuntos'], x: 85, y: 1960, section: 'algebra' },
             ];
 
             // Map unit IDs to their data objects for easy lookup
@@ -329,6 +392,74 @@
                 }
             }
 
+            async function generateRealWorldApplication(unitId) {
+                const unitName = unitsMap.get(unitId)?.name || unitId;
+                openModal(`Aplicación Real de "${unitName}"...`, '<p class="text-center">Cargando... ✨</p>');
+
+                try {
+                    const prompt = `Proporciona un ejemplo de aplicación real del tema "${unitName}" en el campo de la ingeniería. Sé conciso y claro.`;
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // Canvas will provide this
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        llmModalBody.innerHTML = `<p>${text}</p>`;
+                        llmModalTitle.textContent = `Aplicación Real de "${unitName}"`;
+                    } else {
+                        llmModalBody.innerHTML = '<p class="text-red-500">Error: No se pudo generar la aplicación. Inténtalo de nuevo.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error al llamar a la API de Gemini:', error);
+                    llmModalBody.innerHTML = '<p class="text-red-500">Error de conexión o del servidor. Inténtalo de nuevo.</p>';
+                }
+            }
+
+            async function explainWithAnalogy(unitId) {
+                const unitName = unitsMap.get(unitId)?.name || unitId;
+                openModal(`Explicando "${unitName}" con Analogía...`, '<p class="text-center">Cargando... ✨</p>');
+
+                try {
+                    const prompt = `Explica el concepto matemático de "${unitName}" usando una analogía simple y fácil de entender para un estudiante de ingeniería.`;
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // Canvas will provide this
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        llmModalBody.innerHTML = `<p>${text}</p>`;
+                        llmModalTitle.textContent = `Analogía para "${unitName}"`;
+                    } else {
+                        llmModalBody.innerHTML = '<p class="text-red-500">Error: No se pudo generar la analogía. Inténtalo de nuevo.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error al llamar a la API de Gemini:', error);
+                    llmModalBody.innerHTML = '<p class="text-red-500">Error de conexión o del servidor. Inténtalo de nuevo.</p>';
+                }
+            }
+
             async function suggestNextSteps() {
                 openModal('Generando Sugerencias de Estudio...', '<p class="text-center">Cargando... ✨</p>');
 
@@ -376,6 +507,8 @@
                     const missingDeps = getMissingDependencies(unitId);
                     const tooltipSpan = unitElement.querySelector('.tooltip');
                     const summaryBtn = unitElement.querySelector('.generate-summary-btn');
+                    const applicationBtn = unitElement.querySelector('.generate-application-btn');
+                    const analogyBtn = unitElement.querySelector('.generate-analogy-btn');
 
                     if (isUnitApproved(unitId)) {
                         unitElement.classList.add('approved');
@@ -383,6 +516,8 @@
                         unitElement.querySelector('.unit-status').textContent = 'Aprobado ✅';
                         if (tooltipSpan) tooltipSpan.textContent = ''; // Clear tooltip for approved
                         if (summaryBtn) summaryBtn.classList.remove('hidden'); // Show summary button
+                        if (applicationBtn) applicationBtn.classList.remove('hidden'); // Show application button
+                        if (analogyBtn) analogyBtn.classList.remove('hidden'); // Show analogy button
                     } else if (missingDeps.length === 0) {
                         unitElement.classList.remove('locked');
                         unitElement.classList.remove('approved');
@@ -390,6 +525,8 @@
                         unitElement.style.cursor = 'pointer';
                         if (tooltipSpan) tooltipSpan.textContent = ''; // Clear tooltip for unlockable
                         if (summaryBtn) summaryBtn.classList.add('hidden'); // Hide summary button
+                        if (applicationBtn) applicationBtn.classList.add('hidden'); // Hide application button
+                        if (analogyBtn) analogyBtn.classList.add('hidden'); // Hide analogy button
                     } else {
                         unitElement.classList.add('locked');
                         unitElement.classList.remove('approved');
@@ -400,6 +537,8 @@
                             tooltipSpan.textContent = `Falta(n): ${missingNames}`;
                         }
                         if (summaryBtn) summaryBtn.classList.add('hidden'); // Hide summary button
+                        if (applicationBtn) applicationBtn.classList.add('hidden'); // Hide application button
+                        if (analogyBtn) analogyBtn.classList.add('hidden'); // Hide analogy button
                     }
                 });
             }
@@ -408,9 +547,9 @@
                 const unitElement = event.currentTarget;
                 const unitId = unitElement.dataset.id;
 
-                // Check if the click originated from the summary button
-                if (event.target.classList.contains('generate-summary-btn')) {
-                    // This click is handled by the summary button's own listener
+                // Check if the click originated from any of the LLM buttons
+                if (event.target.classList.contains('llm-unit-btn')) {
+                    // This click is handled by the button's own listener
                     return;
                 }
 
@@ -435,28 +574,50 @@
                     const unitElement = document.createElement('div');
                     unitElement.classList.add('unit');
                     unitElement.dataset.id = unit.id;
-                    unitElement.style.left = `${unit.x}%`;
-                    unitElement.style.top = `${unit.y}%`;
+                    // Position units using pixels for more precise control in the new layout
+                    // The wrapper's max-width is 1300px, so 1% is 13px.
+                    // Converting percentage to pixel for x, and using fixed pixel for y
+                    unitElement.style.left = `${(unit.x / 100) * 1300}px`;
+                    unitElement.style.top = `${unit.y}px`;
+
 
                     unitElement.innerHTML = `
                         <div class="unit-title">${unit.name}</div>
                         <div class="unit-status"></div>
                         <span class="tooltip"></span>
-                        <button class="generate-summary-btn mt-2 bg-purple-500 hover:bg-purple-600 text-white text-xs py-1 px-2 rounded-md hidden">
+                        <button class="generate-summary-btn llm-unit-btn hidden">
                             ✨ Resumen
+                        </button>
+                        <button class="generate-application-btn llm-unit-btn hidden">
+                            ✨ Aplicación Real
+                        </button>
+                        <button class="generate-analogy-btn llm-unit-btn hidden">
+                            ✨ Explicar con Analogía
                         </button>
                     `;
                     unitElement.addEventListener('click', handleUnitClick);
                     curriculumWrapper.appendChild(unitElement);
 
-                    // Add event listener for the summary button
+                    // Add event listeners for the LLM buttons
                     const summaryBtn = unitElement.querySelector('.generate-summary-btn');
                     summaryBtn.addEventListener('click', (e) => {
                         e.stopPropagation(); // Prevent unit click event from firing
                         generateSummary(unit.id);
                     });
+
+                    const applicationBtn = unitElement.querySelector('.generate-application-btn');
+                    applicationBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent unit click event from firing
+                        generateRealWorldApplication(unit.id);
+                    });
+
+                    const analogyBtn = unitElement.querySelector('.generate-analogy-btn');
+                    analogyBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent unit click event from firing
+                        explainWithAnalogy(unit.id);
+                    });
                 });
-            }
+            }, 
 
             // Initial rendering and state update
             renderUnits();
